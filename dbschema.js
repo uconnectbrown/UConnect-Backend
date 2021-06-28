@@ -9,6 +9,7 @@ let db = {
       class: "2022",
       majors: ["Applied Mathematics", "", ""], //come from drop down bar
       preferredPronouns: "he/him", //another drop down to avoid trolling (optional)
+      // add profileImages
       // character info
       interests: [
         "Sports Statistics",
@@ -26,7 +27,11 @@ let db = {
         book: "Animal Farm",
         tvShow: "How I Met Your Mother",
         artist: "Queen",
+<<<<<<< HEAD
       }, // 3 to 4?
+=======
+      }, // 3 to 4? we might want to make this optional... even though we find it appealing, it might not be the most relevant
+>>>>>>> ca3b2cec2a62003fd0f4a1c7575d9eb014ef9458
       bio: "", // paragraph text field for open response
       courses: [
         { courseCode: "DATA 2040", courseName: "Deep Learning", color: "" },
