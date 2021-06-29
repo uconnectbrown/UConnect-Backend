@@ -133,16 +133,20 @@ exports.editUserDetails = (req, res) => {
     });
 };
 
-// Get user details
+// Get own user details
 exports.getAuthenticatedUser = (req, res) => {
   let userData = {};
-  db.doc(`/users/${req.user.email}`)
+  db.doc(`/profiles/${req.user.email}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
         userData.credentials = doc.data();
-        return userData;
+        return res.json(userData);
       }
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error });
     });
 };
 
