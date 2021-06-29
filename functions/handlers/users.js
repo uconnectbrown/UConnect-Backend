@@ -36,10 +36,9 @@ exports.signup = (req, res) => {
   if (!valid) return res.status(400).json(errors);
 
   const noImg = "no-img.png";
-  const emailId = newUser.email.split("@")[0];
 
   let token, userId;
-  db.doc(`/profiles/${emailId}`)
+  db.doc(`/profiles/${newUser.email}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
@@ -76,7 +75,7 @@ exports.signup = (req, res) => {
         userId,
       };
 
-      return db.doc(`/profiles/${emailId}`).set(userCredentials);
+      return db.doc(`/profiles/${newUser.email}`).set(userCredentials);
     })
     .then(() => {
       return res.status(201).json({ token });
@@ -138,7 +137,8 @@ exports.editUserDetails = (req, res) => {
 // Get any user's details
 exports.getUserDetails = (req, res) => {
   let userData = {};
-  db.doc(`/profiles/${req.params.email}`)
+  let fullEmail = req.params.emailId + "@brown.edu";
+  db.doc(`/profiles/${fullEmail}`)
     .get()
     .then((doc) => {
       if (doc.exists) {

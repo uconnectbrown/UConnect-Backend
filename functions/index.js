@@ -15,9 +15,9 @@ const {
 app.post("/signup", signup);
 app.post("/login", login);
 app.post("/image", FBAuth, uploadImage);
-app.post("/user", FBAuth, editUserDetails);
+app.post("/edit", FBAuth, editUserDetails);
 // app.get("/user", FBAuth, getOwnDetails); // Could be redundant
-app.get("/user/:email", FBAuth, getUserDetails);
+app.get("/:emailId", FBAuth, getUserDetails);
 
 // Function deployment to API via Express
 exports.api = functions.region("us-east1").https.onRequest(app);
