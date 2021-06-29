@@ -36,9 +36,10 @@ exports.signup = (req, res) => {
   if (!valid) return res.status(400).json(errors);
 
   const noImg = "no-img.png";
+  const emailId = newUser.email.split("@")[0];
 
   let token, userId;
-  db.doc(`/profiles/${newUser.email}`)
+  db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
@@ -74,7 +75,8 @@ exports.signup = (req, res) => {
         imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
         userId,
       };
-      return db.doc(`/profiles/${newUser.email}`).set(userCredentials);
+
+      return db.doc(`/profiles/${emailId}`).set(userCredentials);
     })
     .then(() => {
       return res.status(201).json({ token });
@@ -133,22 +135,43 @@ exports.editUserDetails = (req, res) => {
     });
 };
 
-// Get own user details
-exports.getAuthenticatedUser = (req, res) => {
+// Get any user's details
+exports.getUserDetails = (req, res) => {
   let userData = {};
-  db.doc(`/profiles/${req.user.email}`)
+  db.doc(`/profiles/${req.params.email}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
-        userData.credentials = doc.data();
+        userData.user = doc.data();
         return res.json(userData);
+      } else {
+        return res.status(404).json({ error: "User not found" });
       }
     })
     .catch((err) => {
       console.error(err);
-      return res.status(500).json({ error });
+      return res.status(500).json({ error: err.code });
     });
 };
+
+// Could be redundant
+
+// // Get own user details
+// exports.getOwnDetails = (req, res) => {
+//   let userData = {};
+//   db.doc(`/profiles/${req.user.email}`)
+//     .get()
+//     .then((doc) => {
+//       if (doc.exists) {
+//         userData.credentials = doc.data();
+//         return res.json(userData);
+//       }
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       return res.status(500).json({ error });
+//     });
+// };
 
 // TODO: delete previously uploaded images from storage
 // Upload profile picture
