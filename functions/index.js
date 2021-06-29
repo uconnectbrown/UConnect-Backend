@@ -20,4 +20,4 @@ app.post("/edit", FBAuth, editUserDetails);
 app.get("/:emailId", FBAuth, getUserDetails);
 
 // Function deployment to API via Express
-exports.api = functions.region("us-east1").https.onRequest(app);
+exports.api = functions.region("us-east4").https.onRequest(app);
