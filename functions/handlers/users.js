@@ -120,7 +120,7 @@ exports.login = (req, res) => {
     });
 };
 
-// Add user details
+// Edit user details
 exports.editUserDetails = (req, res) => {
   let userDetails = reduceUserDetails(req.body);
   db.doc(`/profiles/${req.user.email}`)
@@ -131,6 +131,27 @@ exports.editUserDetails = (req, res) => {
     .catch((err) => {
       console.error(err);
       return res.status(500).json({ error: err.code });
+    });
+};
+
+// Get all users
+exports.getAllProfiles = (req, res) => {
+  db.collection("profiles")
+    .orderBy("createdAt", "desc")
+    .get()
+    .then((data) => {
+      let profiles = [];
+      data.forEach((doc) => {
+        profiles.push({
+          email: doc.data().email,
+          class: doc.data().class,
+        });
+      });
+      return res.json(profiles);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
     });
 };
 

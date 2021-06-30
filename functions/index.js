@@ -2,6 +2,10 @@
 const functions = require("firebase-functions");
 const app = require("express")();
 const FBAuth = require("./util/fbAuth");
+
+const cors = require("cors");
+app.use(cors());
+
 const {
   signup,
   login,
@@ -9,6 +13,7 @@ const {
   editUserDetails,
   // getOwnDetails, // could be redundant
   getUserDetails,
+  getAllProfiles,
 } = require("./handlers/users");
 
 // User routes
@@ -17,7 +22,8 @@ app.post("/login", login);
 app.post("/image", FBAuth, uploadImage);
 app.post("/edit", FBAuth, editUserDetails);
 // app.get("/user", FBAuth, getOwnDetails); // Could be redundant
-app.get("/:emailId", FBAuth, getUserDetails);
+app.get("/user/:emailId", FBAuth, getUserDetails);
+app.get("/profiles", getAllProfiles);
 
 // Function deployment to API via Express
 exports.api = functions.region("us-east4").https.onRequest(app);
