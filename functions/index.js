@@ -11,9 +11,10 @@ const {
   login,
   uploadImage,
   editUserDetails,
-  // getOwnDetails, // could be redundant
   getUserDetails,
   getAllProfiles,
+  // updateCourses,
+  getStudents,
 } = require("./handlers/users");
 
 // User routes
@@ -21,9 +22,10 @@ app.post("/signup", signup);
 app.post("/login", login);
 app.post("/image", FBAuth, uploadImage);
 app.post("/edit", FBAuth, editUserDetails);
-// app.get("/user", FBAuth, getOwnDetails); // Could be redundant
 app.get("/user/:emailId", FBAuth, getUserDetails);
 app.get("/profiles", getAllProfiles);
+// app.get("/update/:emailId", FBAuth, updateCourses);
+app.get("/course/:courseCode", FBAuth, getStudents);
 
 // Function deployment to API via Express
 exports.api = functions.region("us-east4").https.onRequest(app);

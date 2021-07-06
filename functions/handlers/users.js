@@ -8,6 +8,7 @@ const {
   validateSignupData,
   validateLoginData,
   reduceUserDetails,
+  updateCourse,
 } = require("../util/validators");
 
 // Sign user up
@@ -175,22 +176,48 @@ exports.getUserDetails = (req, res) => {
     });
 };
 
-// Could be redundant
+// Get all students in given course
+exports.getStudents = (req, res) => {
+  let courseCode = req.params.courseCode;
+  let students = {};
+  db.doc(`courses/${courseCode}`)
+    .get()
+    .then((doc) => {
+      students = doc.data().students;
+      return res.json(students);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
 
-// // Get own user details
-// exports.getOwnDetails = (req, res) => {
-//   let userData = {};
-//   db.doc(`/profiles/${req.user.email}`)
+// // Update courses
+// exports.updateCourses = (req, res) => {
+//   let courses = {};
+//   let fullEmail = req.params.emailId + "@brown.edu";
+//   db.doc(`/profiles/${fullEmail}`)
 //     .get()
 //     .then((doc) => {
 //       if (doc.exists) {
-//         userData.credentials = doc.data();
-//         return res.json(userData);
+//         courses = doc.data().courses;
+//         let courseCodes = courses
+//           .map((course) => course.courseCode.replace(/\s/g, ""))
+//           .filter((courseCode) => courseCode.length > 4);
+//         return res.json({ courseCodes });
+//         for (let i = 0; i < courseCodes.length; i++) {
+//           db.doc(`courses/${courseCodes[i]}`).set({
+//             students: admin.firestore.FieldValue.arrayUnion(fullEmail),
+//           });
+//         }
+//         return res.json({ messages: "Courses added successfully" });
+//       } else {
+//         return res.status(404).json({ error: "User not found" });
 //       }
 //     })
 //     .catch((err) => {
 //       console.error(err);
-//       return res.status(500).json({ error });
+//       return res.status(500).json({ error: err.code });
 //     });
 // };
 
