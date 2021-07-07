@@ -13,7 +13,7 @@ const {
   editUserDetails,
   getUserDetails,
   getAllProfiles,
-  // updateCourses,
+  updateCourses,
   getStudents,
 } = require("./handlers/users");
 
@@ -24,7 +24,7 @@ app.post("/image", FBAuth, uploadImage);
 app.post("/edit", FBAuth, editUserDetails);
 app.get("/user/:emailId", FBAuth, getUserDetails);
 app.get("/profiles", getAllProfiles);
-// app.get("/update/:emailId", FBAuth, updateCourses);
+app.get("/update", FBAuth, updateCourses);
 app.get("/course/:courseCode", FBAuth, getStudents);
 
 // Function deployment to API via Express

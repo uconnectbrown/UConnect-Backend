@@ -8,7 +8,6 @@ const {
   validateSignupData,
   validateLoginData,
   reduceUserDetails,
-  updateCourse,
 } = require("../util/validators");
 
 // Sign user up
@@ -179,11 +178,16 @@ exports.getUserDetails = (req, res) => {
 // Get all students in given course
 exports.getStudents = (req, res) => {
   let courseCode = req.params.courseCode;
-  let students = {};
-  db.doc(`courses/${courseCode}`)
+
+  db.collection("courses")
+    .doc(courseCode)
+    .collection("students")
     .get()
-    .then((doc) => {
-      students = doc.data().students;
+    .then((data) => {
+      let students = [];
+      data.forEach((doc) => {
+        students.push(doc.data().userCardData);
+      });
       return res.json(students);
     })
     .catch((err) => {
@@ -192,34 +196,62 @@ exports.getStudents = (req, res) => {
     });
 };
 
-// // Update courses
-// exports.updateCourses = (req, res) => {
-//   let courses = {};
-//   let fullEmail = req.params.emailId + "@brown.edu";
-//   db.doc(`/profiles/${fullEmail}`)
-//     .get()
-//     .then((doc) => {
-//       if (doc.exists) {
-//         courses = doc.data().courses;
-//         let courseCodes = courses
-//           .map((course) => course.courseCode.replace(/\s/g, ""))
-//           .filter((courseCode) => courseCode.length > 4);
-//         return res.json({ courseCodes });
-//         for (let i = 0; i < courseCodes.length; i++) {
-//           db.doc(`courses/${courseCodes[i]}`).set({
-//             students: admin.firestore.FieldValue.arrayUnion(fullEmail),
-//           });
-//         }
-//         return res.json({ messages: "Courses added successfully" });
-//       } else {
-//         return res.status(404).json({ error: "User not found" });
-//       }
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       return res.status(500).json({ error: err.code });
-//     });
-// };
+// Update courses
+exports.updateCourses = (req, res) => {
+  let courses = {};
+  let promises = [];
+  let firstName, lastName, classYear, imageUrl;
+  let majors = [];
+  let interests = [];
+  db.doc(`/profiles/${req.user.email}`)
+    .get()
+    .then((doc) => {
+      courses = doc.data().courses;
+      firstName = doc.data().firstName;
+      lastName = doc.data().lastName;
+      majors = doc.data().majors;
+      interests = doc.data().interests;
+      classYear = doc.data().class;
+      imageUrl = doc.data().imageUrl;
+      return courses;
+    })
+    .then((courses) => {
+      let courseCodes = courses
+        .map((course) => course.courseCode.replace(/\s/g, ""))
+        .filter((courseCode) => courseCode.length > 4);
+
+      for (let i = 0; i < courseCodes.length; i++) {
+        const userCardData = {
+          firstName,
+          lastName,
+          majors,
+          interests,
+          classYear,
+          imageUrl,
+        };
+        promises.push(
+          db
+            .collection("courses")
+            .doc(`${courseCodes[i]}`)
+            .collection("students")
+            .doc(`${req.user.email}`)
+            .set({ userCardData })
+        );
+      }
+      console.log(courseCodes);
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all([promises]);
+    })
+    .then(() => {
+      return res.json({ messages: "Courses updated successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
 
 // TODO: delete previously uploaded images from storage
 // Upload profile picture
