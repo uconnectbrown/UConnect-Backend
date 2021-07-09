@@ -281,6 +281,7 @@ exports.uploadImage = (req, res) => {
     file.pipe(fs.createWriteStream(filepath));
   });
   busboy.on("finish", () => {
+    let imageUrl;
     admin
       .storage()
       .bucket()
@@ -296,11 +297,11 @@ exports.uploadImage = (req, res) => {
       })
       .then(() => {
         // append token to url
-        const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media&token=${generatedToken}`;
+        imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media&token=${generatedToken}`;
         return db.doc(`/profiles/${req.user.email}`).update({ imageUrl });
       })
       .then(() => {
-        return res.json({ message: "Image uploaded successfully" });
+        return res.json({ imageUrl });
       })
       .catch((err) => {
         console.error(err);
