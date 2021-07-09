@@ -14,6 +14,7 @@ const {
   getUserDetails,
   getAllProfiles,
   updateCourses,
+  deleteCourse,
   getStudents,
 } = require("./handlers/users");
 
@@ -26,6 +27,7 @@ app.get("/user/:emailId", FBAuth, getUserDetails);
 app.get("/profiles", getAllProfiles);
 app.get("/update", FBAuth, updateCourses);
 app.get("/course/:courseCode", FBAuth, getStudents);
+app.get("/delete/:courseCode", FBAuth, deleteCourse);
 
 // Function deployment to API via Express
 exports.api = functions.region("us-east4").https.onRequest(app);

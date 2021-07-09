@@ -200,7 +200,7 @@ exports.getStudents = (req, res) => {
 exports.updateCourses = (req, res) => {
   let courses = {};
   let promises = [];
-  let firstName, lastName, classYear, imageUrl;
+  let firstName, lastName, classYear, imageUrl, email;
   let majors = [];
   let interests = [];
   db.doc(`/profiles/${req.user.email}`)
@@ -213,6 +213,7 @@ exports.updateCourses = (req, res) => {
       interests = doc.data().interests;
       classYear = doc.data().class;
       imageUrl = doc.data().imageUrl;
+      email = doc.data().email;
       return courses;
     })
     .then((courses) => {
@@ -228,6 +229,7 @@ exports.updateCourses = (req, res) => {
           interests,
           classYear,
           imageUrl,
+          email,
         };
         promises.push(
           db
@@ -246,6 +248,23 @@ exports.updateCourses = (req, res) => {
     })
     .then(() => {
       return res.json({ messages: "Courses updated successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// Delete course from database
+exports.deleteCourse = (req, res) => {
+  let courseCode = req.params.courseCode;
+  db.collection("courses")
+    .doc(courseCode)
+    .collection("students")
+    .doc(req.user.email)
+    .delete()
+    .then(() => {
+      return res.json({ messages: "Course successfully deleted" });
     })
     .catch((err) => {
       console.error(err);
