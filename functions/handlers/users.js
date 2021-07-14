@@ -329,3 +329,24 @@ exports.uploadImage = (req, res) => {
   });
   busboy.end(req.rawBody);
 };
+
+// Get all messages in given course
+exports.getMessages = (req, res) => {
+  let courseCode = req.params.courseCode;
+  db.collection("profiles")
+    .doc(req.user.email)
+    .collection(`${courseCode} messages`)
+    .orderBy("mostRecent", "desc")
+    .get()
+    .then((data) => {
+      let messages = [];
+      data.forEach((doc) => {
+        messages.push(doc.data());
+      });
+      return res.json(messages);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
