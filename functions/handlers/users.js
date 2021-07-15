@@ -116,7 +116,10 @@ exports.login = (req, res) => {
         return res
           .status(403)
           .json({ general: "Wrong credentials, please try again" });
-      } else return res.status(500).json({ error: err.code });
+      } else
+        return res
+          .status(500)
+          .json({ general: "Invalid or unregistered email" });
     });
 };
 
@@ -134,24 +137,22 @@ exports.editUserDetails = (req, res) => {
     });
 };
 
-// Get all users
-exports.getAllProfiles = (req, res) => {
-  db.collection("profiles")
-    .orderBy("createdAt", "desc")
+// Get own user's details
+exports.getOwnDetails = (req, res) => {
+  let userData = {};
+  db.doc(`/profiles/${req.user.email}`)
     .get()
-    .then((data) => {
-      let profiles = [];
-      data.forEach((doc) => {
-        profiles.push({
-          email: doc.data().email,
-          class: doc.data().class,
-        });
-      });
-      return res.json(profiles);
+    .then((doc) => {
+      if (doc.exists) {
+        userData.user = doc.data();
+        return res.json(userData);
+      } else {
+        return res.status(404).json({ error: "User not found" });
+      }
     })
     .catch((err) => {
       console.error(err);
-      res.status(500).json({ error: err.code });
+      return res.status(500).json({ error: err.code });
     });
 };
 

@@ -12,7 +12,7 @@ const {
   uploadImage,
   editUserDetails,
   getUserDetails,
-  getAllProfiles,
+  getOwnDetails,
   updateCourses,
   deleteCourse,
   getStudents,
@@ -25,11 +25,11 @@ app.post("/login", login);
 app.post("/image", FBAuth, uploadImage);
 app.post("/edit", FBAuth, editUserDetails);
 app.get("/user/:emailId", FBAuth, getUserDetails);
-app.get("/profiles", getAllProfiles);
 app.get("/update", FBAuth, updateCourses);
 app.get("/course/:courseCode", FBAuth, getStudents);
 app.get("/delete/:courseCode", FBAuth, deleteCourse);
 app.get("/messages/:courseCode", FBAuth, getMessages);
+app.get("/user", FBAuth, getOwnDetails);
 
 // Function deployment to API via Express
 exports.api = functions.region("us-east4").https.onRequest(app);
