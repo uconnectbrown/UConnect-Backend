@@ -201,7 +201,7 @@ exports.getStudents = (req, res) => {
 exports.updateCourses = (req, res) => {
   let courses = {};
   let promises = [];
-  let firstName, lastName, classYear, imageUrl, email;
+  let firstName, lastName, classYear, imageUrl, email, greekLife;
   let majors = [];
   let interests = [];
   db.doc(`/profiles/${req.user.email}`)
@@ -215,6 +215,7 @@ exports.updateCourses = (req, res) => {
       classYear = doc.data().class;
       imageUrl = doc.data().imageUrl;
       email = doc.data().email;
+      greekLife = doc.data().greekLife;
       return courses;
     })
     .then((courses) => {
@@ -231,6 +232,7 @@ exports.updateCourses = (req, res) => {
           classYear,
           imageUrl,
           email,
+          greekLife,
         };
         promises.push(
           db
