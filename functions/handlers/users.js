@@ -156,23 +156,42 @@ exports.getOwnDetails = (req, res) => {
     });
 };
 
-// Get any user's details
-exports.getUserDetails = (req, res) => {
-  let userData = {};
-  let fullEmail = req.params.emailId + "@brown.edu";
-  db.doc(`/profiles/${fullEmail}`)
+// Get own user's courses
+exports.getOwnCourses = (req, res) => {
+  let courses = [];
+  db.doc(`/profiles/${req.user.email}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
-        userData.user = doc.data();
-        return res.json(userData);
+        courses = doc.data().courses;
+        return res.json(courses);
       } else {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "Courses not found" });
       }
     })
     .catch((err) => {
       console.error(err);
       return res.status(500).json({ error: err.code });
+    });
+};
+
+// Get all avatars in a given course
+exports.getAvatars = (req, res) => {
+  let courseCode = req.params.courseCode;
+  db.collection("courses")
+    .doc(courseCode)
+    .collection("students")
+    .get()
+    .then((data) => {
+      let students = [];
+      data.forEach((doc) => {
+        students.push(doc.data().userCardData.imageUrl);
+      });
+      return res.json(students);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
     });
 };
 
@@ -197,13 +216,36 @@ exports.getStudents = (req, res) => {
     });
 };
 
+// Get any user's details
+exports.getUserDetails = (req, res) => {
+  let userData = {};
+  let fullEmail = req.params.emailId + "@brown.edu";
+  db.doc(`/profiles/${fullEmail}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        userData.user = doc.data();
+        return res.json(userData);
+      } else {
+        return res.status(404).json({ error: "User not found" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
 // Update courses
 exports.updateCourses = (req, res) => {
   let courses = {};
   let promises = [];
-  let firstName, lastName, classYear, imageUrl, email;
+  let firstName, lastName, classYear, imageUrl, email, greekLife;
   let majors = [];
   let interests = [];
+  let groups = [];
+  let affinitySports = [];
+  let varsitySports = [];
   db.doc(`/profiles/${req.user.email}`)
     .get()
     .then((doc) => {
@@ -215,6 +257,10 @@ exports.updateCourses = (req, res) => {
       classYear = doc.data().class;
       imageUrl = doc.data().imageUrl;
       email = doc.data().email;
+      groups = doc.data().groups;
+      affinitySports = doc.data().affinitySports;
+      greekLife = doc.data().greekLife;
+      varsitySports = doc.data().varsitySports;
       return courses;
     })
     .then((courses) => {
@@ -231,6 +277,10 @@ exports.updateCourses = (req, res) => {
           classYear,
           imageUrl,
           email,
+          groups,
+          affinitySports,
+          greekLife,
+          varsitySports,
         };
         promises.push(
           db
@@ -349,5 +399,28 @@ exports.getMessages = (req, res) => {
     .catch((err) => {
       console.error(err);
       res.status(500).json({ error: err.code });
+    });
+};
+
+// Get own user's sender info
+exports.getSenderInfo = (req, res) => {
+  let senderInfo = {};
+  db.doc(`/profiles/${req.user.email}`)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        senderInfo.firstName = doc.data().firstName;
+        senderInfo.lastName = doc.data().lastName;
+        senderInfo.imageUrl = doc.data().imageUrl;
+        senderInfo.emailId = doc.data().email.split("@")[0];
+        senderInfo.courses = doc.data().courses;
+        return res.json(senderInfo);
+      } else {
+        return res.status(404).json({ error: "User not found" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
     });
 };
