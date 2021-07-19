@@ -257,14 +257,10 @@ exports.updateCourses = (req, res) => {
       classYear = doc.data().class;
       imageUrl = doc.data().imageUrl;
       email = doc.data().email;
-<<<<<<< HEAD
       groups = doc.data().groups;
       affinitySports = doc.data().affinitySports;
       greekLife = doc.data().greekLife;
       varsitySports = doc.data().varsitySports;
-=======
-      greekLife = doc.data().greekLife;
->>>>>>> a6c26af59c404b27ac96d99d52d331d59e54cdfe
       return courses;
     })
     .then((courses) => {
@@ -281,14 +277,10 @@ exports.updateCourses = (req, res) => {
           classYear,
           imageUrl,
           email,
-<<<<<<< HEAD
           groups,
           affinitySports,
           greekLife,
           varsitySports,
-=======
-          greekLife,
->>>>>>> a6c26af59c404b27ac96d99d52d331d59e54cdfe
         };
         promises.push(
           db
