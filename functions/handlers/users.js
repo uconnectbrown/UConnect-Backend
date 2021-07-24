@@ -281,6 +281,7 @@ exports.updateCourses = (req, res) => {
           affinitySports,
           greekLife,
           varsitySports,
+          courses,
         };
         promises.push(
           db
