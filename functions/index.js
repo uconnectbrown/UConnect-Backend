@@ -1,17 +1,13 @@
 // Setup
 const functions = require("firebase-functions");
 const app = require("express")();
-const FBAuth = require("./util/fbAuth");
-
 const cors = require("cors");
 app.use(cors());
 
 const {
   signup, // signup
-  login, // login
   uploadImage, // profileView
   editUserDetails, //profileView
-  getOwnDetails, // profileView
   updateCourses, // profileView
   deleteCourse, // profileView
   getOwnCourses, // coursesView
@@ -24,18 +20,16 @@ const {
 
 // User routes
 app.post("/signup", signup); // signup
-app.post("/login", login); // login
-app.post("/image", FBAuth, uploadImage); // profileView
-app.post("/edit", FBAuth, editUserDetails); // profileView
-app.get("/user", FBAuth, getOwnDetails); // profileView
-app.get("/update", FBAuth, updateCourses); // profileView
-app.get("/delete/:courseCode", FBAuth, deleteCourse); // profileView
-app.get("/user/courses", FBAuth, getOwnCourses); // coursesView
-app.get("/avatars/:courseCode", FBAuth, getAvatars); // coursesView
-app.get("/students/:courseCode", FBAuth, getStudents); // courseView
-app.get("/user/:emailId", FBAuth, getUserDetails); // studentView
-app.get("/senderInfo", FBAuth, getSenderInfo); // messageView
-app.get("/messages/:courseCode", FBAuth, getMessages); // messagesView
+app.post("/image/:email", uploadImage); // profileView
+app.post("/edit/:email", editUserDetails); // profileView
+app.get("/update/:email", updateCourses); // profileView
+app.get("/delete/:email/:courseCode", deleteCourse); // profileView
+app.get("/courses/:email", getOwnCourses); // coursesView
+app.get("/avatars/:courseCode", getAvatars); // coursesView
+app.get("/students/:courseCode", getStudents); // courseView
+app.get("/user/:email", getUserDetails); // studentView
+app.get("/senderInfo/:email", getSenderInfo); // messageView
+app.get("/messages/:email/:courseCode", getMessages); // messagesView
 
 // Function deployment to API via Express
 exports.api = functions.region("us-east4").https.onRequest(app);

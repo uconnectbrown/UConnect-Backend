@@ -4,11 +4,8 @@ const config = require("../util/config");
 const { uuid } = require("uuidv4");
 const firebase = require("firebase");
 firebase.initializeApp(config);
-const {
-  validateSignupData,
-  validateLoginData,
-  reduceUserDetails,
-} = require("../util/validators");
+const { validateSignupData, reduceUserDetails } = require("../util/validators");
+const auth = firebase.auth();
 
 // Sign user up
 exports.signup = (req, res) => {
@@ -25,8 +22,6 @@ exports.signup = (req, res) => {
     interests: req.body.interests,
     lastName: req.body.lastName,
     majors: req.body.majors,
-    password: req.body.password,
-    confirmPassword: req.body.confirmPassword,
     preferredPronouns: req.body.preferredPronouns,
     varsitySports: req.body.varsitySports,
   };
@@ -37,24 +32,16 @@ exports.signup = (req, res) => {
 
   const noImg = "no-img.png";
 
-  let token, userId;
-  db.doc(`/profiles/${newUser.email}`)
+  let emailId = newUser.email.split("@")[0];
+
+  db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
-        return res.status(400).json({ email: "this email is already taken" });
-      } else {
-        return firebase
-          .auth()
-          .createUserWithEmailAndPassword(newUser.email, newUser.password);
+        return res.status(400).json({ email: "User exists" });
       }
     })
-    .then((data) => {
-      userId = data.user.uid;
-      return data.user.getIdToken();
-    })
-    .then((idToken) => {
-      token = idToken;
+    .then(() => {
       const userCredentials = {
         affinitySports: newUser.affinitySports,
         bio: newUser.bio,
@@ -72,61 +59,23 @@ exports.signup = (req, res) => {
         email: newUser.email,
         createdAt: new Date().toISOString(),
         imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
-        userId,
       };
 
-      return db.doc(`/profiles/${newUser.email}`).set(userCredentials);
+      return db.doc(`/profiles/${emailId}`).set(userCredentials);
     })
     .then(() => {
-      return res.status(201).json({ token });
+      return res.status(201).json({ message: "User successfully created" });
     })
     .catch((err) => {
       console.error(err);
-      if (err.code === "auth/email-already-in-use") {
-        return res.status(400).json({ email: "Email is already in use" });
-      } else {
-        return res.status(500).json({ error: err.code });
-      }
-    });
-};
-
-// Log user in
-exports.login = (req, res) => {
-  const user = {
-    email: req.body.email,
-    password: req.body.password,
-  };
-
-  const { valid, errors } = validateLoginData(user);
-
-  if (!valid) return res.status(400).json(errors);
-
-  firebase
-    .auth()
-    .signInWithEmailAndPassword(user.email, user.password)
-    .then((data) => {
-      return data.user.getIdToken();
-    })
-    .then((token) => {
-      return res.json({ token });
-    })
-    .catch((err) => {
-      console.error(err);
-      if (err.code === "auth/wrong-password") {
-        return res
-          .status(403)
-          .json({ general: "Wrong credentials, please try again" });
-      } else
-        return res
-          .status(500)
-          .json({ general: "Invalid or unregistered email" });
     });
 };
 
 // Edit user details
 exports.editUserDetails = (req, res) => {
   let userDetails = reduceUserDetails(req.body);
-  db.doc(`/profiles/${req.user.email}`)
+  let emailId = req.params.email.split("@")[0];
+  db.doc(`/profiles/${emailId}`)
     .update(userDetails)
     .then(() => {
       return res.json({ messages: "Details edited succesfully" });
@@ -137,29 +86,11 @@ exports.editUserDetails = (req, res) => {
     });
 };
 
-// Get own user's details
-exports.getOwnDetails = (req, res) => {
-  let userData = {};
-  db.doc(`/profiles/${req.user.email}`)
-    .get()
-    .then((doc) => {
-      if (doc.exists) {
-        userData.user = doc.data();
-        return res.json(userData);
-      } else {
-        return res.status(404).json({ error: "User not found" });
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      return res.status(500).json({ error: err.code });
-    });
-};
-
 // Get own user's courses
 exports.getOwnCourses = (req, res) => {
   let courses = [];
-  db.doc(`/profiles/${req.user.email}`)
+  let emailId = req.params.email.split("@")[0];
+  db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
@@ -219,8 +150,8 @@ exports.getStudents = (req, res) => {
 // Get any user's details
 exports.getUserDetails = (req, res) => {
   let userData = {};
-  let fullEmail = req.params.emailId + "@brown.edu";
-  db.doc(`/profiles/${fullEmail}`)
+  let emailId = req.params.email.split("@")[0];
+  db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
@@ -238,15 +169,16 @@ exports.getUserDetails = (req, res) => {
 
 // Update courses
 exports.updateCourses = (req, res) => {
-  let courses = {};
+  let emailId = req.params.email.split("@")[0];
   let promises = [];
+  let courses = {};
   let firstName, lastName, classYear, imageUrl, email, greekLife;
   let majors = [];
   let interests = [];
   let groups = [];
   let affinitySports = [];
   let varsitySports = [];
-  db.doc(`/profiles/${req.user.email}`)
+  db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
       courses = doc.data().courses;
@@ -288,11 +220,10 @@ exports.updateCourses = (req, res) => {
             .collection("courses")
             .doc(`${courseCodes[i]}`)
             .collection("students")
-            .doc(`${req.user.email}`)
+            .doc(emailId)
             .set({ userCardData })
         );
       }
-      console.log(courseCodes);
       return promises;
     })
     .then((promises) => {
@@ -309,11 +240,12 @@ exports.updateCourses = (req, res) => {
 
 // Delete course from database
 exports.deleteCourse = (req, res) => {
+  let emailId = req.params.email.split("@")[0];
   let courseCode = req.params.courseCode;
   db.collection("courses")
     .doc(courseCode)
     .collection("students")
-    .doc(req.user.email)
+    .doc(emailId)
     .delete()
     .then(() => {
       return res.json({ messages: "Course successfully deleted" });
@@ -331,6 +263,7 @@ exports.uploadImage = (req, res) => {
   const path = require("path");
   const os = require("os");
   const fs = require("fs");
+  const emailId = req.params.email.split("@")[0];
 
   const busboy = new BusBoy({ headers: req.headers });
 
@@ -369,7 +302,7 @@ exports.uploadImage = (req, res) => {
       .then(() => {
         // append token to url
         imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media&token=${generatedToken}`;
-        return db.doc(`/profiles/${req.user.email}`).update({ imageUrl });
+        return db.doc(`/profiles/${emailId}`).update({ imageUrl });
       })
       .then(() => {
         return res.json({ imageUrl });
@@ -385,8 +318,9 @@ exports.uploadImage = (req, res) => {
 // Get all messages in given course
 exports.getMessages = (req, res) => {
   let courseCode = req.params.courseCode;
+  let emailId = req.params.email.split("@")[0];
   db.collection("profiles")
-    .doc(req.user.email)
+    .doc(emailId)
     .collection(`${courseCode} messages`)
     .orderBy("mostRecent", "desc")
     .get()
@@ -405,8 +339,9 @@ exports.getMessages = (req, res) => {
 
 // Get own user's sender info
 exports.getSenderInfo = (req, res) => {
+  const emailId = req.params.email.split("@")[0];
   let senderInfo = {};
-  db.doc(`/profiles/${req.user.email}`)
+  db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
