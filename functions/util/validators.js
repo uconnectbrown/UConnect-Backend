@@ -60,7 +60,7 @@ exports.reduceUserDetails = (data) => {
   if (validEdit(data.firstName)) userDetails.firstName = data.firstName;
   if (validEdit(data.greekLife)) userDetails.greekLife = data.greekLife;
   if (validEdit(data.groups)) userDetails.groups = data.groups;
-  if (validEdit(data.interests)) userDetails.interests = data.interests;
+  // if (validEdit(data.interests)) userDetails.interests = data.interests;
   if (validEdit(data.lastName)) userDetails.lastName = data.lastName;
   if (validEdit(data.majors)) userDetails.majors = data.majors;
   if (validEdit(data.preferredPronouns))
