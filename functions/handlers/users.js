@@ -178,7 +178,9 @@ exports.updateCourses = (req, res) => {
   let courses = {};
   let firstName, lastName, classYear, imageUrl, email, greekLife;
   let majors = [];
-  let interests = [];
+  let interests1 = [];
+  let interests2 = [];
+  let interests3 = [];
   let groups = [];
   let affinitySports = [];
   let varsitySports = [];
@@ -189,7 +191,9 @@ exports.updateCourses = (req, res) => {
       firstName = doc.data().firstName;
       lastName = doc.data().lastName;
       majors = doc.data().majors;
-      interests = doc.data().interests;
+      interests1 = doc.data().interests1;
+      interests2 = doc.data().interests2;
+      interests3 = doc.data().interests3;
       classYear = doc.data().class;
       imageUrl = doc.data().imageUrl;
       email = doc.data().email;
@@ -209,7 +213,9 @@ exports.updateCourses = (req, res) => {
           firstName,
           lastName,
           majors,
-          interests,
+          interests1,
+          interests2,
+          interests3,
           classYear,
           imageUrl,
           email,
