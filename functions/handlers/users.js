@@ -5,27 +5,23 @@ const { uuid } = require("uuidv4");
 const firebase = require("firebase");
 firebase.initializeApp(config);
 const { validateSignupData, reduceUserDetails } = require("../util/validators");
-const auth = firebase.auth();
 
 // Sign user up
 exports.signup = (req, res) => {
   const newUser = {
-    affinitySports: req.body.affinitySports,
-    bio: req.body.bio,
-    class: req.body.class,
-    courses: req.body.courses,
-    email: req.body.email,
-    favorites: req.body.favorites,
+    // Basic Info
     firstName: req.body.firstName,
-    greekLife: req.body.greekLife,
-    groups: req.body.groups,
+    lastName: req.body.lastName,
+    classYear: req.body.classYear,
+    majors: req.body.majors,
+    preferredPronouns: req.body.preferredPronouns,
+    email: req.body.email,
+    // Interests
     interests1: req.body.interests1,
     interests2: req.body.interests2,
     interests3: req.body.interests3,
-    lastName: req.body.lastName,
-    majors: req.body.majors,
-    preferredPronouns: req.body.preferredPronouns,
-    varsitySports: req.body.varsitySports,
+    // Courses
+    courses: req.body.courses,
   };
 
   const { valid, errors } = validateSignupData(newUser);
@@ -45,24 +41,21 @@ exports.signup = (req, res) => {
     })
     .then(() => {
       const userCredentials = {
-        affinitySports: newUser.affinitySports,
-        bio: newUser.bio,
-        class: newUser.class,
-        courses: newUser.courses,
-        favorites: newUser.favorites,
+        // Basic Info
         firstName: newUser.firstName,
-        greekLife: newUser.greekLife,
-        groups: newUser.groups,
-        interests1: newUser.interests1,
-        interests2: newUser.interests2,
-        interests3: newUser.interests3,
         lastName: newUser.lastName,
+        classYear: newUser.classYear,
         majors: newUser.majors,
         preferredPronouns: newUser.preferredPronouns,
-        varsitySports: newUser.varsitySports,
         email: newUser.email,
         createdAt: new Date().toISOString(),
         imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
+        // Interests
+        interests1: newUser.interests1,
+        interests2: newUser.interests2,
+        interests3: newUser.interests3,
+        // Courses
+        courses: newUser.courses,
       };
 
       return db.doc(`/profiles/${emailId}`).set(userCredentials);
