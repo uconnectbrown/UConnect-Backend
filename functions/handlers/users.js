@@ -56,6 +56,8 @@ exports.signup = (req, res) => {
         interests3: newUser.interests3,
         // Courses
         courses: newUser.courses,
+        // Miscellaneous
+        firstTime: true,
       };
 
       return db.doc(`/profiles/${emailId}`).set(userCredentials);

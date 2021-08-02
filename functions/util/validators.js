@@ -36,23 +36,10 @@ exports.validateSignupData = (data) => {
   };
 };
 
-// Checks for valid login data using above functions
-exports.validateLoginData = (data) => {
-  let errors = {};
-
-  if (isEmpty(data.email)) errors.email = "Must not be empty";
-  if (isEmpty(data.password)) errors.password = "Must not be empty";
-
-  return {
-    errors,
-    valid: Object.keys(errors).length === 0 ? true : false,
-  };
-};
-
 exports.reduceUserDetails = (data) => {
   let userDetails = {};
 
-  if (validEdit(data.class)) userDetails.class = data.class;
+  if (validEdit(data.classYear)) userDetails.classYear = data.classYear;
   if (validEdit(data.courses)) userDetails.courses = data.courses;
   if (validEdit(data.firstName)) userDetails.firstName = data.firstName;
   if (validEdit(data.lastName)) userDetails.lastName = data.lastName;
