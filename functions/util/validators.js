@@ -53,5 +53,9 @@ exports.reduceUserDetails = (data) => {
   if (validEdit(data.interests2)) userDetails.interests2 = data.interests2;
   if (validEdit(data.interests3)) userDetails.interests3 = data.interests3;
   if (validEdit(data.instruments)) userDetails.instruments = data.instruments;
+  if (validEdit(data.pickUpSports))
+    userDetails.pickUpSports = data.pickUpSports;
+  if (validEdit(data.pets)) userDetails.pets = data.pets;
+  if (validEdit(data.favorites)) userDetails.favorites = data.favorites;
   return userDetails;
 };

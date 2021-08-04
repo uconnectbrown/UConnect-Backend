@@ -56,6 +56,15 @@ exports.signup = (req, res) => {
         interests3: newUser.interests3,
         // Courses
         courses: newUser.courses,
+        // Optional
+        bio: "",
+        varsitySports: ["", ""],
+        groups: ["", "", ""],
+        greekLife: "",
+        instruments: ["", "", ""],
+        pickUpSports: ["", "", ""],
+        pets: ["", "", ""],
+        favorites: { book: "", movie: "", show: "", artist: "" },
         // Miscellaneous
         firstTime: true,
       };
@@ -170,54 +179,56 @@ exports.getUserDetails = (req, res) => {
 exports.updateCourses = (req, res) => {
   let emailId = req.params.email.split("@")[0];
   let promises = [];
-  let courses = {};
   let firstName, lastName, classYear, imageUrl, email, greekLife;
   let majors = [];
+  let varsitySports = [];
   let interests1 = [];
   let interests2 = [];
   let interests3 = [];
-  let groups = [];
-  let affinitySports = [];
-  let varsitySports = [];
+  let instruments = [];
+  let pickUpSports = [];
+  let pets = [];
+  let courses = [];
   db.doc(`/profiles/${emailId}`)
     .get()
     .then((doc) => {
-      courses = doc.data().courses;
       firstName = doc.data().firstName;
       lastName = doc.data().lastName;
+      classYear = doc.data().classYear;
+      imageUrl = doc.data().imageUrl;
+      email = doc.data().email;
+      greekLife = doc.data().greekLife;
       majors = doc.data().majors;
+      varsitySports = doc.data().varsitySports;
       interests1 = doc.data().interests1;
       interests2 = doc.data().interests2;
       interests3 = doc.data().interests3;
-      classYear = doc.data().class;
-      imageUrl = doc.data().imageUrl;
-      email = doc.data().email;
-      groups = doc.data().groups;
-      affinitySports = doc.data().affinitySports;
-      greekLife = doc.data().greekLife;
-      varsitySports = doc.data().varsitySports;
+      instruments = doc.data().instruments;
+      pickUpSports = doc.data().pickUpSports;
+      pets = doc.data().pets;
+      courses = doc.data().courses;
       return courses;
     })
     .then((courses) => {
       let courseCodes = courses
-        .map((course) => course.courseCode.replace(/\s/g, ""))
+        .map((course) => course.code.replace(/\s/g, ""))
         .filter((courseCode) => courseCode.length > 4);
-
       for (let i = 0; i < courseCodes.length; i++) {
         const userCardData = {
           firstName,
           lastName,
-          majors,
-          interests1,
-          interests2,
-          interests3,
           classYear,
           imageUrl,
           email,
-          groups,
-          affinitySports,
           greekLife,
+          majors,
           varsitySports,
+          interests1,
+          interests2,
+          interests3,
+          instruments,
+          pickUpSports,
+          pets,
           courses,
         };
         promises.push(
