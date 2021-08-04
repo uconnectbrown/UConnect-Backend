@@ -7,8 +7,6 @@ const isEmpty = (string) => {
 // Checks for valid edit request
 const validEdit = (data) => {
   if (data === undefined || data === null) return false;
-  if (typeof data === "string" && isEmpty(data) === true) return false;
-  else if (data.length === 0) return false;
   else return true;
 };
 
@@ -46,6 +44,14 @@ exports.reduceUserDetails = (data) => {
   if (validEdit(data.majors)) userDetails.majors = data.majors;
   if (validEdit(data.preferredPronouns))
     userDetails.preferredPronouns = data.preferredPronouns;
-
+  if (validEdit(data.bio)) userDetails.bio = data.bio;
+  if (validEdit(data.groups)) userDetails.groups = data.groups;
+  if (validEdit(data.varsitySports))
+    userDetails.varsitySports = data.varsitySports;
+  if (validEdit(data.greekLife)) userDetails.greekLife = data.greekLife;
+  if (validEdit(data.interests1)) userDetails.interests1 = data.interests1;
+  if (validEdit(data.interests2)) userDetails.interests2 = data.interests2;
+  if (validEdit(data.interests3)) userDetails.interests3 = data.interests3;
+  if (validEdit(data.instruments)) userDetails.instruments = data.instruments;
   return userDetails;
 };
