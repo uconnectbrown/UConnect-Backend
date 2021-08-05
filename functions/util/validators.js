@@ -18,6 +18,56 @@ const isEmail = (email) => {
   else return false;
 };
 
+const compare = (a1, a2) => a1.filter((v) => a2.includes(v)).length;
+
+exports.compScore = (me, students) => {
+  let mW = 10; // major
+  let iW = 5; // interests
+  let inW = 10; // instruments
+  let puW = 10; // pick up sports
+  let pW = 10; // pets
+  let cW = 5; // courses
+  let compScores = students.map((student) => {
+    let compScore = 0;
+    compScore += student.classYear === me.classYear ? 20 : 0;
+    compScore +=
+      mW * compare(me.majors.filter(Boolean), student.majors.filter(Boolean));
+    compScore +=
+      student.varsitySports.filter(Boolean).length > 0 &&
+      me.varsitySports.filter(Boolean).length > 0
+        ? 20
+        : 0;
+    compScore += student.greekLife && me.greekLife ? 10 : 0;
+    compScore +=
+      iW *
+      (compare(me.interests1, student.interests1) +
+        compare(me.interests2, student.interests2) +
+        compare(me.interests3, student.interests3));
+    compScore +=
+      inW *
+      compare(
+        me.instruments.filter(Boolean),
+        student.instruments.filter(Boolean)
+      );
+    compScore +=
+      puW *
+      compare(
+        me.pickUpSports.filter(Boolean),
+        student.pickUpSports.filter(Boolean)
+      );
+    compScore +=
+      pW * compare(me.pets.filter(Boolean), student.pets.filter(Boolean));
+    let courseOverlap = compare(
+      me.courses.map((course) => course.code).filter(Boolean),
+      student.courses.map((course) => course.code).filter(Boolean)
+    );
+    compScore += cW * courseOverlap;
+
+    return [compScore, courseOverlap];
+  });
+  return compScores;
+};
+
 // Checks for valid signup data using above functions
 exports.validateSignupData = (data) => {
   let errors = {};

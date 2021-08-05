@@ -4,7 +4,21 @@ const config = require("../util/config");
 const { uuid } = require("uuidv4");
 const firebase = require("firebase");
 firebase.initializeApp(config);
-const { validateSignupData, reduceUserDetails } = require("../util/validators");
+const {
+  compScore,
+  validateSignupData,
+  reduceUserDetails,
+} = require("../util/validators");
+
+const {
+  firstNames,
+  lastNames,
+  classYears,
+  majors_,
+  interests1_,
+  interests2_,
+  interests3_,
+} = require("../util/dummyInfo");
 
 // Sign user up
 exports.signup = (req, res) => {
@@ -117,6 +131,7 @@ exports.getOwnCourses = (req, res) => {
 // Get all avatars in a given course
 exports.getAvatars = (req, res) => {
   let courseCode = req.params.courseCode;
+  let email = req.params.email;
   db.collection("courses")
     .doc(courseCode)
     .collection("students")
@@ -124,7 +139,9 @@ exports.getAvatars = (req, res) => {
     .then((data) => {
       let students = [];
       data.forEach((doc) => {
-        students.push(doc.data().userCardData.imageUrl);
+        if (doc.data().userCardData.email !== email) {
+          students.push(doc.data().userCardData.imageUrl);
+        }
       });
       return res.json(students);
     })
@@ -137,17 +154,27 @@ exports.getAvatars = (req, res) => {
 // Get all students in given course
 exports.getStudents = (req, res) => {
   let courseCode = req.params.courseCode;
+  let email = req.params.email;
 
   db.collection("courses")
     .doc(courseCode)
     .collection("students")
     .get()
     .then((data) => {
-      let students = [];
+      let studentProfiles = [];
+      let myProfile = {};
       data.forEach((doc) => {
-        students.push(doc.data().userCardData);
+        if (doc.data().userCardData.email !== email) {
+          studentProfiles.push(doc.data().userCardData);
+        } else if (doc.data().userCardData.email === email) {
+          myProfile = doc.data().userCardData;
+        }
       });
-      return res.json(students);
+      let compScores = compScore(myProfile, studentProfiles);
+      studentProfiles.forEach(function (element, index) {
+        element.compScores = compScores[index];
+      });
+      return res.json(studentProfiles);
     })
     .catch((err) => {
       console.error(err);
@@ -375,4 +402,143 @@ exports.getSenderInfo = (req, res) => {
       console.error(err);
       return res.status(500).json({ error: err.code });
     });
+};
+
+// Dummy User Generation
+
+// Sign user up
+exports.signupDummies = (req, res) => {
+  for (let i = 0; i < 50; i++) {
+    const firstName_ =
+      firstNames[Math.floor(Math.random() * firstNames.length)];
+    const newUser = {
+      // Basic Info
+      firstName: firstName_,
+      lastName: lastNames[Math.floor(Math.random() * lastNames.length)],
+      classYear: classYears[Math.floor(Math.random() * classYears.length)],
+      majors: [majors_[Math.floor(Math.random() * majors_.length)], "", ""],
+      preferredPronouns: "",
+      email: `${firstName_}@brown.edu`,
+      // Interests
+      interests1: [1, 2, 3].map(
+        (index) => interests1_[Math.floor(Math.random() * interests1_.length)]
+      ),
+      interests2: [1, 2, 3, 4].map(
+        (index) => interests2_[Math.floor(Math.random() * interests2_.length)]
+      ),
+      interests3: [1, 2, 3].map(
+        (index) => interests3_[Math.floor(Math.random() * interests3_.length)]
+      ),
+      // Courses
+      courses: [
+        { code: "CODE 0001", color: "#16a085", name: "Class 1" },
+        { code: "CODE 0002", color: "#16a085", name: "Class 2" },
+        { code: "CODE 0003", color: "#16a085", name: "Class 3" },
+        { code: "CODE 0004", color: "#16a085", name: "Class 4" },
+        { code: "", color: "", name: "" },
+      ],
+    };
+
+    const { valid, errors } = validateSignupData(newUser);
+
+    if (!valid) return res.status(400).json(errors);
+
+    const noImg = "no-img.png";
+
+    let emailId = newUser.email.split("@")[0];
+
+    db.doc(`/profiles/${firstName_}`)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          return res.status(400).json({ email: "User exists" });
+        }
+      })
+      .then(() => {
+        const userCredentials = {
+          // Basic Info
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          classYear: newUser.classYear,
+          majors: newUser.majors,
+          preferredPronouns: newUser.preferredPronouns,
+          email: newUser.email,
+          createdAt: new Date().toISOString(),
+          imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
+          // Interests
+          interests1: newUser.interests1,
+          interests2: newUser.interests2,
+          interests3: newUser.interests3,
+          // Courses
+          courses: newUser.courses,
+          // Optional
+          bio: "",
+          varsitySports: ["", ""],
+          groups: ["", "", ""],
+          greekLife: "",
+          instruments: ["", "", ""],
+          pickUpSports: ["", "", ""],
+          pets: ["", "", ""],
+          favorites: { book: "", movie: "", show: "", artist: "" },
+          // Miscellaneous
+          firstTime: true,
+        };
+        const userCardData = {
+          firstName: userCredentials.firstName,
+          lastName: userCredentials.lastName,
+          classYear: userCredentials.classYear,
+          imageUrl: userCredentials.imageUrl,
+          email: userCredentials.email,
+          groups: userCredentials.groups,
+          greekLife: userCredentials.greekLife,
+          majors: userCredentials.majors,
+          varsitySports: userCredentials.varsitySports,
+          interests1: userCredentials.interests1,
+          interests2: userCredentials.interests2,
+          interests3: userCredentials.interests3,
+          instruments: userCredentials.instruments,
+          pickUpSports: userCredentials.pickUpSports,
+          pets: userCredentials.pets,
+          courses: userCredentials.courses,
+        };
+
+        promises = [
+          db.doc(`/profiles/${emailId}`).set(userCredentials),
+          db
+            .collection("courses")
+            .doc(`CODE0001`)
+            .collection("students")
+            .doc(firstName_)
+            .set({ userCardData }),
+          db
+            .collection("courses")
+            .doc(`CODE0002`)
+            .collection("students")
+            .doc(firstName_)
+            .set({ userCardData }),
+          db
+            .collection("courses")
+            .doc(`CODE0003`)
+            .collection("students")
+            .doc(firstName_)
+            .set({ userCardData }),
+          db
+            .collection("courses")
+            .doc(`CODE0004`)
+            .collection("students")
+            .doc(firstName_)
+            .set({ userCardData }),
+        ];
+        return promises;
+      })
+      .then((promises) => {
+        Promise.all([promises]);
+      })
+      .then(() => {
+        return res.status(201).json({ message: "User successfully created" });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
 };
