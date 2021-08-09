@@ -28,7 +28,7 @@ app.get("/delete/:email/:courseCode", deleteCourse); // profileView
 app.get("/courses/:email", getOwnCourses); // coursesView
 app.get("/avatars/:email/:courseCode", getAvatars); // coursesView
 app.get("/students/:email/:courseCode", getStudents); // courseView
-app.get("/user/:email", getUserDetails); // studentView
+app.get("/user/:emailId", getUserDetails); // studentView
 app.get("/senderInfo/:email", getSenderInfo); // messageView
 app.get("/messages/:email/:courseCode", getMessages); // messagesView
 
