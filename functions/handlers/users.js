@@ -96,7 +96,7 @@ exports.signup = (req, res) => {
 // Edit user details
 exports.editUserDetails = (req, res) => {
   let userDetails = reduceUserDetails(req.body);
-  let emailId = req.params.emailId;
+  let emailId = req.params.email.split("@")[0];
   db.doc(`/profiles/${emailId}`)
     .update(userDetails)
     .then(() => {
