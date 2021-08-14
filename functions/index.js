@@ -16,9 +16,7 @@ const {
   getAll, // universityView
   request, // studentView
   accept, // studentView
-  checkInc, //studentView
-  checkOut, //studentView
-  checkCon, //studentView
+  checkStatus, // studentView
   uploadImage, // profileView
   editUserDetails, //profileView
   updateCourses, // profileView
@@ -39,15 +37,13 @@ app.get("/generate", generateFeatured);
 
 // Others
 app.post("/signup", signup); // signup
-app.get("/featured/:email", getFeatured); // landing
-app.get("/pending/:email", getPending); // connections
-app.get("/connections/:email", getConnections); // connections
+app.get("/featured/:emailId", getFeatured); // landing
+app.get("/pending/:emailId", getPending); // connections
+app.get("/connections/:emailId", getConnections); // connections
 app.get("/all/:email", getAll); // universityView
-app.post("/request/:sender/:receiver", request); // studentView
-app.get("/accept/:sender/:receiver", accept); // landing
-app.get("/inc/:emailId/:studentId", checkInc); // studentView
-app.get("/out/:emailId/:studentId", checkOut); // studentView
-app.get("/con/:emailId/:studentId", checkCon); // studentView
+app.post("/request/:senderId/:receiverId", request); // studentView
+app.post("/accept/:senderId/:receiverId", accept); // landing
+app.get("/status/:emailId/:studentId", checkStatus); // studentView
 app.get("/all/:email", getAll); // universityView
 app.post("/image/:email", uploadImage); // profileView
 app.post("/edit/:email", editUserDetails); // profileView

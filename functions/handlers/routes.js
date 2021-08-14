@@ -169,7 +169,7 @@ exports.signup = (req, res) => {
 
 // Get featured profiles
 exports.getFeatured = (req, res) => {
-  let emailId = req.params.email.split("@")[0];
+  let emailId = req.params.emailId;
   let featured = [];
   db.doc(`/profiles/${emailId}`)
     .get()
@@ -184,7 +184,7 @@ exports.getFeatured = (req, res) => {
 
 // Get pending requests
 exports.getPending = (req, res) => {
-  let emailId = req.params.email.split("@")[0];
+  let emailId = req.params.emailId;
   let pending = [];
   db.collection("profiles")
     .doc(emailId)
@@ -195,6 +195,25 @@ exports.getPending = (req, res) => {
         pending.push(doc.data());
       });
       return res.json({ pending });
+    })
+    .catch((err) => {
+      return res.json({ error: err.code });
+    });
+};
+
+// Get connections
+exports.getConnections = (req, res) => {
+  let emailId = req.params.emailId;
+  let connections = [];
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("connections")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        connections.push(doc.data());
+      });
+      return res.json({ connections });
     })
     .catch((err) => {
       return res.json({ error: err.code });
@@ -223,8 +242,8 @@ exports.getAll = (req, res) => {
 
 // Send a request
 exports.request = (req, res) => {
-  let senderId = req.params.sender.split("@")[0];
-  let receiverId = req.params.receiver.split("@")[0];
+  let senderId = req.params.senderId;
+  let receiverId = req.params.receiverId;
 
   let promises = [
     db
@@ -233,6 +252,20 @@ exports.request = (req, res) => {
       .collection("sent")
       .doc(receiverId)
       .set({ sent: new Date().toISOString() }),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("statuses")
+      .doc(receiverId)
+      .set({ status: "out" }),
+
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("statuses")
+      .doc(senderId)
+      .set({ status: "in" }),
 
     db
       .collection("profiles")
@@ -265,8 +298,8 @@ exports.request = (req, res) => {
 
 // Accept request
 exports.accept = (req, res) => {
-  let senderId = req.params.sender.split("@")[0];
-  let receiverId = req.params.receiver.split("@")[0];
+  let senderId = req.params.senderId;
+  let receiverId = req.params.receiverId;
   let promises = [
     db
       .collection("profiles")
@@ -280,14 +313,38 @@ exports.accept = (req, res) => {
       .doc(receiverId)
       .collection("connections")
       .doc(senderId)
-      .set({}),
+      .set({
+        emailId: senderId,
+        name: req.body.senderName,
+        imageUrl: req.body.senderImageUrl,
+        classYear: req.body.senderClassYear,
+      }),
 
     db
       .collection("profiles")
       .doc(senderId)
       .collection("connections")
       .doc(receiverId)
-      .set({}),
+      .set({
+        emailId: receiverId,
+        name: req.body.receiverName,
+        imageUrl: req.body.receiverImageUrl,
+        classYear: req.body.receiverClassYear,
+      }),
+
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("statuses")
+      .doc(senderId)
+      .set({ status: "con" }),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("statuses")
+      .doc(receiverId)
+      .set({ status: "con" }),
   ];
   Promise.all([promises])
     .then(() => {
@@ -299,86 +356,21 @@ exports.accept = (req, res) => {
     });
 };
 
-// Check incoming
-exports.checkInc = (req, res) => {
+// Check status
+exports.checkStatus = (req, res) => {
   let emailId = req.params.emailId;
   let studentId = req.params.studentId;
   db.collection("profiles")
     .doc(emailId)
-    .collection("pending")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        if (doc.id === studentId) {
-          return res.json(true);
-        }
-      });
-    })
-    .then(() => {
-      return res.json(false);
-    })
-    .catch((err) => res.json({ error: err.code }));
-};
-
-// Check outgoing
-exports.checkOut = (req, res) => {
-  let emailId = req.params.emailId;
-  let studentId = req.params.studentId;
-  db.collection("profiles")
+    .collection("statuses")
     .doc(studentId)
-    .collection("pending")
     .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        if (doc.id === emailId) {
-          return res.json(true);
-        }
-      });
-    })
-    .then(() => {
-      return res.json(false);
+    .then((doc) => {
+      if (doc.exists) {
+        return res.json(doc.data().status);
+      } else return res.json("nil");
     })
     .catch((err) => res.json({ error: err.code }));
-};
-
-// Check connections
-exports.checkCon = (req, res) => {
-  let emailId = req.params.emailId;
-  let studentId = req.params.studentId;
-  db.collection("profiles")
-    .doc(emailId)
-    .collection("connections")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        if (doc.id === studentId) {
-          return res.json(true);
-        }
-      });
-    })
-    .then(() => {
-      return res.json(false);
-    })
-    .catch((err) => res.json({ error: err.code }));
-};
-
-// Get connections
-exports.getConnections = (req, res) => {
-  let emailId = req.params.email.split("@")[0];
-  let connections = [];
-  db.collection("profiles")
-    .doc(emailId)
-    .collection("connections")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        connections.push(doc.id);
-      });
-      return res.json({ connections });
-    })
-    .catch((err) => {
-      return res.json({ error: err.code });
-    });
 };
 
 // Edit user details
