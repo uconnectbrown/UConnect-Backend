@@ -5,7 +5,16 @@ const cors = require("cors");
 app.use(cors());
 
 const {
+  // Strictly backend
+  generateFeatured,
+
+  // Others
   signup, // signup
+  getFeatured, // landing
+  getPending, //connections
+  getAll, // universityView
+  request, // studentView
+  accept, // landing
   uploadImage, // profileView
   editUserDetails, //profileView
   updateCourses, // profileView
@@ -17,10 +26,22 @@ const {
   getSenderInfo, // messageView
   getMessages, // messagesView
   signupDummies, // dummy
-} = require("./handlers/users");
+} = require("./handlers/routes");
 
 // User routes
+
+// Strictly backend
+app.get("/generate", generateFeatured);
+
+// Others
 app.post("/signup", signup); // signup
+app.get("/featured/:email", getFeatured); // landing
+app.get("/pending/:email", getPending); // connections
+app.get("/all/:email", getAll); // universityView
+app.post("/request/:sender/:receiver", request); // studentView
+app.get("/accept/:sender/:receiver", accept); // landing
+app.get("/featured/:email", getFeatured); // landing
+app.get("/all/:email", getAll); // universityView
 app.post("/image/:email", uploadImage); // profileView
 app.post("/edit/:email", editUserDetails); // profileView
 app.get("/update/:email", updateCourses); // profileView

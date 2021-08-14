@@ -4,12 +4,16 @@ const config = require("../util/config");
 const { uuid } = require("uuidv4");
 const firebase = require("firebase");
 firebase.initializeApp(config);
+
+// Resources
 const {
   compScore,
   validateSignupData,
   reduceUserDetails,
+  chooseRandom,
 } = require("../util/validators");
 
+// Dummy user generation
 const {
   firstNames,
   lastNames,
@@ -19,6 +23,75 @@ const {
   interests2_,
   interests3_,
 } = require("../util/dummyInfo");
+
+// ROUTES START HERE
+
+// Strictly Backend
+
+// Generate featured profiles
+exports.generateFeatured = (req, res) => {
+  let emailIds = [];
+  let promises = [];
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        emailIds.push(doc.id);
+      });
+      return emailIds;
+    })
+    .then((emailIds) => {
+      for (let i = 0; i < emailIds.length; i++) {
+        promises.push(
+          db
+            .collection("profiles")
+            .get()
+            .then((data) => {
+              let studentProfiles = [];
+              let myProfile = {};
+              data.forEach((doc) => {
+                if (doc.id !== emailIds[i]) {
+                  studentProfiles.push(doc.data());
+                } else if (doc.id === emailIds[i]) {
+                  myProfile = doc.data();
+                }
+              });
+              let students = [];
+              let scores = compScore(myProfile, studentProfiles);
+              if (scores.length > 1000) {
+                students = chooseRandom(
+                  scores.slice(0, Math.ceil(scores.length / 10)),
+                  10
+                );
+              } else if (scores.length > 100) {
+                students = chooseRandom(scores.slice(0, 100, 10));
+              } else {
+                students = chooseRandom(scores, 10);
+              }
+
+              return students;
+            })
+            .then((students) => {
+              return db.collection("profiles").doc(emailIds[i]).update({
+                featured: students,
+              });
+            })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all(promises);
+    })
+    .then(() => {
+      return res.json({ message: "Featured profiles updated successfully" });
+    })
+    .catch((err) => {
+      res.json({ error: err.code });
+    });
+};
+
+// Other Routes
 
 // Sign user up
 exports.signup = (req, res) => {
@@ -79,7 +152,8 @@ exports.signup = (req, res) => {
         pickUpSports: ["", "", ""],
         pets: ["", "", ""],
         favorites: { book: "", movie: "", show: "", artist: "" },
-        // Miscellaneous
+        // Other
+        requests: 3,
         firstTime: true,
       };
 
@@ -90,6 +164,138 @@ exports.signup = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
+    });
+};
+
+// Get featured profiles
+exports.getFeatured = (req, res) => {
+  let emailId = req.params.email.split("@")[0];
+  let featured = [];
+  db.doc(`/profiles/${emailId}`)
+    .get()
+    .then((doc) => {
+      featured = doc.data().featured;
+      return res.json({ featured });
+    })
+    .catch((err) => {
+      return res.json({ error: err.code });
+    });
+};
+
+// Get pending requests
+exports.getPending = (req, res) => {
+  let emailId = req.params.email.split("@")[0];
+  let pending = [];
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("pending")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        pending.push(doc.data());
+      });
+      return res.json({ pending });
+    })
+    .catch((err) => {
+      return res.json({ error: err.code });
+    });
+};
+
+// Get all students in UConnect
+exports.getAll = (req, res) => {
+  let email = req.params.email;
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      let students = [];
+      data.forEach((doc) => {
+        if (doc.data().email !== email) {
+          students.push(doc.data());
+        }
+      });
+      return res.json(students);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
+// Send a request
+exports.request = (req, res) => {
+  let senderId = req.params.sender.split("@")[0];
+  let receiverId = req.params.receiver.split("@")[0];
+
+  let promises = [
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("sent")
+      .doc(receiverId)
+      .set({ sent: new Date().toISOString() }),
+
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("pending")
+      .doc(senderId)
+      .set({
+        sent: new Date().toISOString(),
+        emailId: senderId,
+        name: req.body.name,
+        imageUrl: req.body.imageUrl,
+        classYear: req.body.classYear,
+      }),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .update({ requests: admin.firestore.FieldValue.increment(-1) }),
+  ];
+
+  Promise.all([promises])
+    .then(() => {
+      return res.json({ messages: "Request sent successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// Accept request
+exports.accept = (req, res) => {
+  let senderId = req.params.sender.split("@")[0];
+  let receiverId = req.params.receiver.split("@")[0];
+  let promises = [
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("pending")
+      .doc(senderId)
+      .delete(),
+
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("connections")
+      .doc(senderId)
+      .set({}),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("connections")
+      .doc(receiverId)
+      .set({}),
+  ];
+  Promise.all([promises])
+    .then(() => {
+      return res.json({ messages: "Request accepted successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
     });
 };
 

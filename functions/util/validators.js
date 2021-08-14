@@ -63,9 +63,29 @@ exports.compScore = (me, students) => {
     );
     compScore += cW * courseOverlap;
 
-    return [compScore, courseOverlap];
+    return {
+      score: compScore,
+      emailId: student.email.split("@")[0],
+      imageUrl: student.imageUrl,
+      name: student.firstName + " " + student.lastName,
+    };
   });
-  return compScores;
+  return compScores.sort((a, b) =>
+    a["score"] < b["score"] ? 1 : b["score"] < a["score"] ? -1 : 0
+  );
+};
+
+exports.chooseRandom = (arr, num = 1) => {
+  const res = [];
+  for (let i = 0; i < num; ) {
+    const random = Math.floor(Math.random() * arr.length);
+    if (res.indexOf(arr[random]) !== -1) {
+      continue;
+    }
+    res.push(arr[random]);
+    i++;
+  }
+  return res;
 };
 
 // Checks for valid signup data using above functions
