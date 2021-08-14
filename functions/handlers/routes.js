@@ -299,6 +299,88 @@ exports.accept = (req, res) => {
     });
 };
 
+// Check incoming
+exports.checkInc = (req, res) => {
+  let emailId = req.params.emailId;
+  let studentId = req.params.studentId;
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("pending")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        if (doc.id === studentId) {
+          return res.json(true);
+        }
+      });
+    })
+    .then(() => {
+      return res.json(false);
+    })
+    .catch((err) => res.json({ error: err.code }));
+};
+
+// Check outgoing
+exports.checkOut = (req, res) => {
+  let emailId = req.params.emailId;
+  let studentId = req.params.studentId;
+  db.collection("profiles")
+    .doc(studentId)
+    .collection("pending")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        if (doc.id === emailId) {
+          return res.json(true);
+        }
+      });
+    })
+    .then(() => {
+      return res.json(false);
+    })
+    .catch((err) => res.json({ error: err.code }));
+};
+
+// Check connections
+exports.checkCon = (req, res) => {
+  let emailId = req.params.emailId;
+  let studentId = req.params.studentId;
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("connections")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        if (doc.id === studentId) {
+          return res.json(true);
+        }
+      });
+    })
+    .then(() => {
+      return res.json(false);
+    })
+    .catch((err) => res.json({ error: err.code }));
+};
+
+// Get connections
+exports.getConnections = (req, res) => {
+  let emailId = req.params.email.split("@")[0];
+  let connections = [];
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("connections")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        connections.push(doc.id);
+      });
+      return res.json({ connections });
+    })
+    .catch((err) => {
+      return res.json({ error: err.code });
+    });
+};
+
 // Edit user details
 exports.editUserDetails = (req, res) => {
   let userDetails = reduceUserDetails(req.body);
