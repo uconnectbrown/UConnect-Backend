@@ -638,14 +638,34 @@ exports.uploadImage = (req, res) => {
   busboy.end(req.rawBody);
 };
 
-// Get all messages in given course
+// Get all messages for current user
 exports.getMessages = (req, res) => {
-  let courseCode = req.params.courseCode;
-  let emailId = req.params.email.split("@")[0];
+  let emailId = req.params.emailId;
   db.collection("profiles")
     .doc(emailId)
-    .collection(`${courseCode} messages`)
+    .collection("messages")
     .orderBy("mostRecent", "desc")
+    .get()
+    .then((data) => {
+      let messages = [];
+      data.forEach((doc) => {
+        messages.push(doc.data());
+      });
+      return res.json(messages);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
+// Get all messages in given chat room
+exports.getChat = (req, res) => {
+  let roomId = req.params.roomId;
+  db.collection("messages")
+    .doc(roomId)
+    .collection("chat")
+    .orderBy("createdAt", "desc")
     .get()
     .then((data) => {
       let messages = [];

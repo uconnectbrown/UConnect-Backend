@@ -9,14 +9,18 @@ const {
   generateFeatured,
 
   // Others
-  signup, // signup
-  getFeatured, // landing
-  getPending, // connections
-  getConnections, // connections
-  getAll, // universityView
-  request, // studentView
-  accept, // studentView
-  checkStatus, // studentView
+  signup, // Welcome
+  getFeatured, // Landing
+  getAll, // Landing
+  request, // Student
+  accept, // Student
+  checkStatus, // Student
+  getPending, // Connections
+  getConnections, // Connections
+  getSenderInfo, // Message
+  getMessages, // Messages
+  getChat, //Messages
+
   uploadImage, // profileView
   editUserDetails, //profileView
   updateCourses, // profileView
@@ -25,8 +29,7 @@ const {
   getAvatars, // coursesView
   getStudents, // courseView
   getUserDetails, // studentView
-  getSenderInfo, // messageView
-  getMessages, // messagesView
+
   signupDummies, // dummy
 } = require("./handlers/routes");
 
@@ -36,15 +39,17 @@ const {
 app.get("/generate", generateFeatured);
 
 // Others
-app.post("/signup", signup); // signup
-app.get("/featured/:emailId", getFeatured); // landing
-app.get("/pending/:emailId", getPending); // connections
-app.get("/connections/:emailId", getConnections); // connections
-app.get("/all/:email", getAll); // universityView
-app.post("/request/:senderId/:receiverId", request); // studentView
-app.post("/accept/:senderId/:receiverId", accept); // landing
-app.get("/status/:emailId/:studentId", checkStatus); // studentView
-app.get("/all/:email", getAll); // universityView
+app.post("/signup", signup); // Welcome
+app.get("/featured/:emailId", getFeatured); // Landing
+app.get("/all/:email", getAll); // Landing
+app.post("/request/:senderId/:receiverId", request); // Student
+app.post("/accept/:senderId/:receiverId", accept); // Student
+app.get("/status/:emailId/:studentId", checkStatus); // Student
+app.get("/pending/:emailId", getPending); // Connections
+app.get("/connections/:emailId", getConnections); // Connections
+app.get("/messages/:emailId", getMessages); // Messages
+app.get("/chat/:roomId", getChat); // Messages
+
 app.post("/image/:email", uploadImage); // profileView
 app.post("/edit/:email", editUserDetails); // profileView
 app.get("/update/:email", updateCourses); // profileView
