@@ -30,6 +30,8 @@ const {
   getStudents, // courseView
   getUserDetails, // studentView
 
+  createEvent, //events
+
   signupDummies, // dummy
 } = require("./handlers/routes");
 
@@ -60,6 +62,11 @@ app.get("/students/:email/:courseCode", getStudents); // courseView
 app.get("/user/:emailId", getUserDetails); // studentView
 app.get("/senderInfo/:email", getSenderInfo); // messageView
 app.get("/messages/:email/:courseCode", getMessages); // messagesView
+
+app.post("/events", createEvent); // events
+app.get("/events/:eventId", deleteEvent); // events
+app.get("/events", getEvents); // events
+app.post("/events/:supporterId/:eventId"), supportEvent; // events
 
 // Dummy routes
 app.get("/signupDummies", signupDummies); // signup

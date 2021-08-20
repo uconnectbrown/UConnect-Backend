@@ -388,6 +388,71 @@ exports.editUserDetails = (req, res) => {
     });
 };
 
+// Create event
+exports.createEvent = (req, res) => {
+  let eventId = uuid();
+  db.collection("events")
+    .doc(`${eventId}`)
+    .set({
+      name: req.body.name,
+      date: req.body.date,
+      location: req.body.location,
+      postedBy: req.body.postedBy,
+      hostedBy: req.body.hostedBy,
+    })
+    .then(() => {
+      return res.json({ messages: "Event created succesfully" });
+    })
+    .catch((err) => res.json({ error: err.code }));
+};
+
+// Delete event
+exports.deleteEvent = (req, res) => {
+  let eventId = req.params.eventId;
+  db.collection("events")
+    .doc(`${eventId}`)
+    .delete()
+    .then(() => {
+      return res.json({ messages: "Event deleted succesfully" });
+    })
+    .catch((err) => res.json({ error: err.code }));
+}
+
+// Get events
+exports.getEvents = (res) => {
+  db.collection("events")
+    .get()
+    .then((data) => {
+      let events = [];
+      data.forEach((doc) => {
+        events.push(doc.data())
+      });
+      return res.json(events);
+    })
+    .catch((err) => res.json({ error: err.code }));
+};
+
+// Support event
+exports.supportEvent = (req, res) => {
+  let eventId = req.params.eventId;
+  let supporterId = req.params.supporterId;
+  db.collection("events")
+    .doc(`${eventId}`)
+    .collection("fans")
+    .doc(`${supporterId}`)
+    .set({
+      sent: new Date().toISOString(),
+      emailId: supproterId,
+      name: req.body.name,
+      imageUrl: req.body.imageUrl,
+      classYear: req.body.classYear,
+    })
+    .then(() => {
+      return res.json({ messages: "Event supported succesfully" });
+    })
+    .catch((err) => res.json({ error: err.code }));
+}
+
 // Get own user's courses
 exports.getOwnCourses = (req, res) => {
   let courses = [];
