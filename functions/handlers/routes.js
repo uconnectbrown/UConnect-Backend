@@ -101,14 +101,13 @@ exports.signup = (req, res) => {
     lastName: req.body.lastName,
     classYear: req.body.classYear,
     majors: req.body.majors,
-    preferredPronouns: req.body.preferredPronouns,
+    pronouns: req.body.pronouns,
+    locatoin: req.body.location,
     email: req.body.email,
     // Interests
     interests1: req.body.interests1,
     interests2: req.body.interests2,
     interests3: req.body.interests3,
-    // Courses
-    courses: req.body.courses,
   };
 
   const { valid, errors } = validateSignupData(newUser);
@@ -133,7 +132,7 @@ exports.signup = (req, res) => {
         lastName: newUser.lastName,
         classYear: newUser.classYear,
         majors: newUser.majors,
-        preferredPronouns: newUser.preferredPronouns,
+        pronouns: newUser.pronouns,
         email: newUser.email,
         createdAt: new Date().toISOString(),
         imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
@@ -142,7 +141,13 @@ exports.signup = (req, res) => {
         interests2: newUser.interests2,
         interests3: newUser.interests3,
         // Courses
-        courses: newUser.courses,
+        courses: [
+          { code: "", name: "", color: "" },
+          { code: "", name: "", color: "" },
+          { code: "", name: "", color: "" },
+          { code: "", name: "", color: "" },
+          { code: "", name: "", color: "" },
+        ],
         // Optional
         bio: "",
         varsitySports: ["", ""],
@@ -388,70 +393,70 @@ exports.editUserDetails = (req, res) => {
     });
 };
 
-// Create event
-exports.createEvent = (req, res) => {
-  let eventId = uuid();
-  db.collection("events")
-    .doc(`${eventId}`)
-    .set({
-      name: req.body.name,
-      date: req.body.date,
-      location: req.body.location,
-      postedBy: req.body.postedBy,
-      hostedBy: req.body.hostedBy,
-    })
-    .then(() => {
-      return res.json({ messages: "Event created succesfully" });
-    })
-    .catch((err) => res.json({ error: err.code }));
-};
+// // Create event
+// exports.createEvent = (req, res) => {
+//   let eventId = uuid();
+//   db.collection("events")
+//     .doc(`${eventId}`)
+//     .set({
+//       name: req.body.name,
+//       date: req.body.date,
+//       location: req.body.location,
+//       postedBy: req.body.postedBy,
+//       hostedBy: req.body.hostedBy,
+//     })
+//     .then(() => {
+//       return res.json({ messages: "Event created succesfully" });
+//     })
+//     .catch((err) => res.json({ error: err.code }));
+// };
 
-// Delete event
-exports.deleteEvent = (req, res) => {
-  let eventId = req.params.eventId;
-  db.collection("events")
-    .doc(`${eventId}`)
-    .delete()
-    .then(() => {
-      return res.json({ messages: "Event deleted succesfully" });
-    })
-    .catch((err) => res.json({ error: err.code }));
-}
+// // Delete event
+// exports.deleteEvent = (req, res) => {
+//   let eventId = req.params.eventId;
+//   db.collection("events")
+//     .doc(`${eventId}`)
+//     .delete()
+//     .then(() => {
+//       return res.json({ messages: "Event deleted succesfully" });
+//     })
+//     .catch((err) => res.json({ error: err.code }));
+// };
 
-// Get events
-exports.getEvents = (res) => {
-  db.collection("events")
-    .get()
-    .then((data) => {
-      let events = [];
-      data.forEach((doc) => {
-        events.push(doc.data())
-      });
-      return res.json(events);
-    })
-    .catch((err) => res.json({ error: err.code }));
-};
+// // Get events
+// exports.getEvents = (res) => {
+//   db.collection("events")
+//     .get()
+//     .then((data) => {
+//       let events = [];
+//       data.forEach((doc) => {
+//         events.push(doc.data());
+//       });
+//       return res.json(events);
+//     })
+//     .catch((err) => res.json({ error: err.code }));
+// };
 
-// Support event
-exports.supportEvent = (req, res) => {
-  let eventId = req.params.eventId;
-  let supporterId = req.params.supporterId;
-  db.collection("events")
-    .doc(`${eventId}`)
-    .collection("fans")
-    .doc(`${supporterId}`)
-    .set({
-      sent: new Date().toISOString(),
-      emailId: supproterId,
-      name: req.body.name,
-      imageUrl: req.body.imageUrl,
-      classYear: req.body.classYear,
-    })
-    .then(() => {
-      return res.json({ messages: "Event supported succesfully" });
-    })
-    .catch((err) => res.json({ error: err.code }));
-}
+// // Support event
+// exports.supportEvent = (req, res) => {
+//   let eventId = req.params.eventId;
+//   let supporterId = req.params.supporterId;
+//   db.collection("events")
+//     .doc(`${eventId}`)
+//     .collection("fans")
+//     .doc(`${supporterId}`)
+//     .set({
+//       sent: new Date().toISOString(),
+//       emailId: supproterId,
+//       name: req.body.name,
+//       imageUrl: req.body.imageUrl,
+//       classYear: req.body.classYear,
+//     })
+//     .then(() => {
+//       return res.json({ messages: "Event supported succesfully" });
+//     })
+//     .catch((err) => res.json({ error: err.code }));
+// };
 
 // Get own user's courses
 exports.getOwnCourses = (req, res) => {
