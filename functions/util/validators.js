@@ -57,6 +57,7 @@ exports.compScore = (me, students) => {
       name: student.firstName + " " + student.lastName,
       classYear: student.classYear,
       majors: student.majors,
+      status: null,
     };
   });
   return compScores.sort((a, b) =>
