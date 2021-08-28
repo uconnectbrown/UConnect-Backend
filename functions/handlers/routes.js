@@ -28,6 +28,59 @@ const {
 
 // Strictly Backend
 
+// Delete all pending, statuses, sent, connections
+exports.resetConnections = (req, res) => {
+  let promises = [];
+  let emailIds = [];
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        emailIds.push(doc.id);
+      });
+      return emailIds;
+    })
+
+    .then((emailIds) => {
+      for (let i = 0; i < emailIds.length; i++) {
+        promises.push(
+          db
+            .collection("profiles")
+            .doc(emailIds[i])
+            .collection("statuses")
+            .delete()
+        );
+        promises.push(
+          db
+            .collection("profiles")
+            .doc(emailIds[i])
+            .collection("connections")
+            .delete()
+        );
+        promises.push(
+          db.collection("profiles").doc(emailIds[i]).collection("sent").delete()
+        );
+        promises.push(
+          db
+            .collection("profiles")
+            .doc(emailIds[i])
+            .collection("pending")
+            .delete()
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all(promises);
+    })
+    .then(() => {
+      return res.json({ message: "Connections reset successfully" });
+    })
+    .catch((err) => {
+      res.json({ error: err.code });
+    });
+};
+
 // Generate featured profiles
 exports.generateFeatured = (req, res) => {
   let emailIds = [];
@@ -42,6 +95,16 @@ exports.generateFeatured = (req, res) => {
     })
     .then((emailIds) => {
       for (let i = 0; i < emailIds.length; i++) {
+        let notValid = [];
+        db.collection("profiles")
+          .doc(emailIds[i])
+          .collection("statuses")
+          .get()
+          .then((data) => {
+            data.forEach((doc) => {
+              notValid.push(doc.id);
+            });
+          });
         promises.push(
           db
             .collection("profiles")
@@ -50,7 +113,7 @@ exports.generateFeatured = (req, res) => {
               let studentProfiles = [];
               let myProfile = {};
               data.forEach((doc) => {
-                if (doc.id !== emailIds[i]) {
+                if (doc.id !== emailIds[i] && !notValid.includes(doc.id)) {
                   studentProfiles.push(doc.data());
                 } else if (doc.id === emailIds[i]) {
                   myProfile = doc.data();
@@ -58,17 +121,7 @@ exports.generateFeatured = (req, res) => {
               });
               let students = [];
               let scores = compScore(myProfile, studentProfiles);
-              if (scores.length > 1000) {
-                students = chooseRandom(
-                  scores.slice(0, Math.ceil(scores.length / 10)),
-                  10
-                );
-              } else if (scores.length > 100) {
-                students = chooseRandom(scores.slice(0, 100, 10));
-              } else {
-                students = chooseRandom(scores, 10);
-              }
-
+              students = chooseRandom(scores.slice(0, 3), 3);
               return students;
             })
             .then((students) => {
@@ -184,6 +237,38 @@ exports.getFeatured = (req, res) => {
     })
     .catch((err) => {
       return res.json({ error: err.code });
+    });
+};
+
+// Edit featured statuses
+exports.requestFeatured = (req, res) => {
+  let senderId = req.params.senderId;
+  let receiverId = req.params.receiverId;
+  let featured = [];
+  db.doc(`/profiles/${senderId}`)
+    .get()
+    .then((doc) => {
+      return (featured = doc.data().featured);
+    })
+    .then((featured) => {
+      for (let i = 0; i < featured.length; i++) {
+        if (featured[i].emailId === receiverId) {
+          featured[i].status = "out";
+        }
+      }
+      return featured;
+    })
+    .then((featured) => {
+      return db
+        .collection("profiles")
+        .doc(senderId)
+        .update({ featured: featured });
+    })
+    .then(() => {
+      return res.json({ message: "request sent successfully" });
+    })
+    .catch((err) => {
+      console.log(err);
     });
 };
 

@@ -7,10 +7,12 @@ app.use(cors());
 const {
   // Strictly backend
   generateFeatured,
+  resetConnections,
 
   // Others
   signup, // Welcome
   getFeatured, // Landing
+  requestFeatured, // Landing
   getAll, // Landing
   request, // Student
   accept, // Student
@@ -39,12 +41,15 @@ const {
 
 // Strictly backend
 app.get("/generate", generateFeatured);
+app.get("/reset", resetConnections);
 
 // Others
 app.post("/signup", signup); // Profile Build
 app.post("/edit/:emailId", editUserDetails); // Profile
 
 app.get("/featured/:emailId", getFeatured); // Landing
+app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Landing
+
 app.get("/all/:email", getAll); // Landing
 app.post("/request/:senderId/:receiverId", request); // Student
 app.post("/accept/:senderId/:receiverId", accept); // Student
