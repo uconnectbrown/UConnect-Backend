@@ -20,48 +20,35 @@ const isEmail = (email) => {
 
 const compare = (a1, a2) => a1.filter((v) => a2.includes(v)).length;
 
+const compareMajors = (a1, a2) => a1.filter((v) => (a2.includes(v.split("-")[0]) || a2.includes(v.split("-")[1]))).length;
+
 exports.compScore = (me, students) => {
-  let mW = 10; // major
-  let iW = 5; // interests
-  let inW = 10; // instruments
-  let puW = 10; // pick up sports
-  let pW = 10; // pets
-  let cW = 5; // courses
+  let mW = 8; // major
+  let iW = 0.5; // interests
+  let cW = 6; // courses
   let compScores = students.map((student) => {
     let compScore = 0;
-    compScore += student.classYear === me.classYear ? 20 : 0;
+    compScore += student.classYear === me.classYear ? 10 : 0;
+    compScore += (Math.abs(student.classYear - me.classYear) > 1) ? -10 : 0;
     compScore +=
-      mW * compare(me.majors.filter(Boolean), student.majors.filter(Boolean));
+      mW * compareMajors(me.majors.filter(Boolean), student.majors.filter(Boolean))**0.5;
     compScore +=
       student.varsitySports.filter(Boolean).length > 0 &&
       me.varsitySports.filter(Boolean).length > 0
-        ? 20
+        ? 6
         : 0;
-    compScore += student.greekLife && me.greekLife ? 10 : 0;
+    compScore += student.greekLife && me.greekLife ? 3 : 0;
     compScore +=
       iW *
       (compare(me.interests1, student.interests1) +
         compare(me.interests2, student.interests2) +
-        compare(me.interests3, student.interests3));
-    compScore +=
-      inW *
-      compare(
-        me.instruments.filter(Boolean),
-        student.instruments.filter(Boolean)
-      );
-    compScore +=
-      puW *
-      compare(
-        me.pickUpSports.filter(Boolean),
-        student.pickUpSports.filter(Boolean)
-      );
-    compScore +=
-      pW * compare(me.pets.filter(Boolean), student.pets.filter(Boolean));
+        compare(me.interests3, student.interests3))**2;
     let courseOverlap = compare(
       me.courses.map((course) => course.code).filter(Boolean),
       student.courses.map((course) => course.code).filter(Boolean)
     );
-    compScore += cW * courseOverlap;
+    compScore += cW * courseOverlap**0.5;
+    compScore += student.location === me.location ? 10 : 0;
 
     return {
       score: compScore,
@@ -70,6 +57,10 @@ exports.compScore = (me, students) => {
       name: student.firstName + " " + student.lastName,
       classYear: student.classYear,
       majors: student.majors,
+<<<<<<< HEAD
+=======
+      status: null,
+>>>>>>> f66300c12e1cccbe40f855341eaa93b521b0ced5
     };
   });
   return compScores.sort((a, b) =>

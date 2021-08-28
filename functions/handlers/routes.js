@@ -102,7 +102,7 @@ exports.signup = (req, res) => {
     classYear: req.body.classYear,
     majors: req.body.majors,
     pronouns: req.body.pronouns,
-    locatoin: req.body.location,
+    location: req.body.location,
     email: req.body.email,
     // Interests
     interests1: req.body.interests1,
