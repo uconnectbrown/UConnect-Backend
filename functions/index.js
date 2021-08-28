@@ -42,6 +42,8 @@ app.get("/generate", generateFeatured);
 
 // Others
 app.post("/signup", signup); // Profile Build
+app.post("/edit/:emailId", editUserDetails); // Profile
+
 app.get("/featured/:emailId", getFeatured); // Landing
 app.get("/all/:email", getAll); // Landing
 app.post("/request/:senderId/:receiverId", request); // Student
@@ -54,7 +56,6 @@ app.get("/messages/:emailId", getMessages); // Messages
 app.get("/chat/:roomId", getChat); // Messages
 
 app.post("/image/:email", uploadImage); // profileView
-app.post("/edit/:email", editUserDetails); // profileView
 app.get("/update/:email", updateCourses); // profileView
 app.get("/delete/:email/:courseCode", deleteCourse); // profileView
 app.get("/courses/:email", getOwnCourses); // coursesView

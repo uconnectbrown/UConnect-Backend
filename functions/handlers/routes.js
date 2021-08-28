@@ -381,7 +381,7 @@ exports.checkStatus = (req, res) => {
 // Edit user details
 exports.editUserDetails = (req, res) => {
   let userDetails = reduceUserDetails(req.body);
-  let emailId = req.params.email.split("@")[0];
+  let emailId = req.params.emailId;
   db.doc(`/profiles/${emailId}`)
     .update(userDetails)
     .then(() => {

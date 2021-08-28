@@ -68,6 +68,8 @@ exports.compScore = (me, students) => {
       emailId: student.email.split("@")[0],
       imageUrl: student.imageUrl,
       name: student.firstName + " " + student.lastName,
+      classYear: student.classYear,
+      majors: student.majors,
     };
   });
   return compScores.sort((a, b) =>
@@ -112,8 +114,8 @@ exports.reduceUserDetails = (data) => {
   if (validEdit(data.firstName)) userDetails.firstName = data.firstName;
   if (validEdit(data.lastName)) userDetails.lastName = data.lastName;
   if (validEdit(data.majors)) userDetails.majors = data.majors;
-  if (validEdit(data.preferredPronouns))
-    userDetails.preferredPronouns = data.preferredPronouns;
+  if (validEdit(data.pronouns)) userDetails.pronouns = data.pronouns;
+  if (validEdit(data.location)) userDetails.location = data.location;
   if (validEdit(data.bio)) userDetails.bio = data.bio;
   if (validEdit(data.groups)) userDetails.groups = data.groups;
   if (validEdit(data.varsitySports))
