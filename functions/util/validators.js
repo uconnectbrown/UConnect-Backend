@@ -45,12 +45,31 @@ exports.compScore = (me, students) => {
         ? 6
         : 0;
     compScore += student.greekLife && me.greekLife ? 3 : 0;
-    compScore +=
-      iW *
-      (compare(me.interests1, student.interests1) +
-        compare(me.interests2, student.interests2) +
-        compare(me.interests3, student.interests3)) **
-        2;
+    if (
+      me.interests1.length + me.interests2.length + me.interests3.length ===
+        10 &&
+      student.interests1.length +
+        student.interests2.length +
+        student.interests3.length ===
+        10
+    ) {
+      compScore +=
+        iW *
+        (compare(
+          me.interests1.map((i) => i.interest),
+          student.interests1.map((i) => i.interest)
+        ) +
+          compare(
+            me.interests2.map((i) => i.interest),
+            student.interests2.map((i) => i.interest)
+          ) +
+          compare(
+            me.interests3.map((i) => i.interest),
+            student.interests3.map((i) => i.interest)
+          )) **
+          2;
+    }
+
     let courseOverlap = compare(
       me.courses.map((course) => course.code).filter(Boolean),
       student.courses.map((course) => course.code).filter(Boolean)

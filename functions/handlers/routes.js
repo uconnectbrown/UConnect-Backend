@@ -240,36 +240,114 @@ exports.getFeatured = (req, res) => {
     });
 };
 
-// Edit featured statuses
+// Request featured
 exports.requestFeatured = (req, res) => {
   let senderId = req.params.senderId;
   let receiverId = req.params.receiverId;
-  let featured = [];
-  db.doc(`/profiles/${senderId}`)
-    .get()
-    .then((doc) => {
-      return (featured = doc.data().featured);
-    })
-    .then((featured) => {
-      for (let i = 0; i < featured.length; i++) {
-        if (featured[i].emailId === receiverId) {
-          featured[i].status = "out";
+  let featured1 = [];
+  let featured2 = [];
+  let promises = [
+    db
+      .doc(`/profiles/${senderId}`)
+      .get()
+      .then((doc) => {
+        return (featured1 = doc.data().featured);
+      })
+      .then((featured) => {
+        for (let i = 0; i < featured.length; i++) {
+          if (featured[i].emailId === receiverId) {
+            featured[i].status = "out";
+          }
         }
-      }
-      return featured;
-    })
-    .then((featured) => {
-      return db
-        .collection("profiles")
-        .doc(senderId)
-        .update({ featured: featured });
-    })
+        return featured;
+      })
+      .then((featured) => {
+        return db
+          .collection("profiles")
+          .doc(senderId)
+          .update({ featured: featured });
+      }),
+    db
+      .doc(`/profiles/${receiverId}`)
+      .get()
+      .then((doc) => {
+        return (featured2 = doc.data().featured);
+      })
+      .then((featured) => {
+        for (let i = 0; i < featured.length; i++) {
+          if (featured[i].emailId === senderId) {
+            featured[i].status = "inc";
+          }
+        }
+        return featured;
+      })
+      .then((featured) => {
+        return db
+          .collection("profiles")
+          .doc(receiverId)
+          .update({ featured: featured });
+      }),
+  ];
+  Promise.all(promises)
     .then(() => {
-      return res.json({ message: "request sent successfully" });
+      res.json({ message: "Request sent successfully" });
     })
-    .catch((err) => {
-      console.log(err);
-    });
+    .catch((err) => console.log(err));
+};
+
+// Accept featured
+exports.acceptFeatured = (req, res) => {
+  let senderId = req.params.senderId;
+  let receiverId = req.params.receiverId;
+  let featured1 = [];
+  let featured2 = [];
+  let promises = [
+    db
+      .doc(`/profiles/${receiverId}`)
+      .get()
+      .then((doc) => {
+        return (featured1 = doc.data().featured);
+      })
+      .then((featured) => {
+        for (let i = 0; i < featured.length; i++) {
+          if (featured[i].emailId === senderId) {
+            featured[i].status = "con";
+          }
+        }
+        return featured;
+      })
+      .then((featured) => {
+        return db
+          .collection("profiles")
+          .doc(receiverId)
+          .update({ featured: featured });
+      }),
+    db
+      .doc(`/profiles/${senderId}`)
+      .get()
+      .then((doc) => {
+        return (featured2 = doc.data().featured);
+      })
+      .then((featured) => {
+        for (let i = 0; i < featured.length; i++) {
+          if (featured[i].emailId === receiverId) {
+            featured[i].status = "con";
+          }
+        }
+        return featured;
+      })
+      .then((featured) => {
+        return db
+          .collection("profiles")
+          .doc(senderId)
+          .update({ featured: featured });
+      }),
+  ];
+  Promise.all(promises)
+    .then(() => {
+      res.json({ message: "Request accepted successfully" });
+    })
+    .catch((err) => console.log(err));
 };
 
 // Get pending requests
@@ -605,10 +683,6 @@ exports.getStudents = (req, res) => {
           myProfile = doc.data().userCardData;
         }
       });
-      let compScores = compScore(myProfile, studentProfiles);
-      studentProfiles.forEach(function (element, index) {
-        element.compScores = compScores[index];
-      });
       return res.json(studentProfiles);
     })
     .catch((err) => {
@@ -639,7 +713,7 @@ exports.getUserDetails = (req, res) => {
 
 // Update courses
 exports.updateCourses = (req, res) => {
-  let emailId = req.params.email.split("@")[0];
+  let emailId = req.params.emailId;
   let promises = [];
   let firstName, lastName, classYear, imageUrl, email, greekLife;
   let majors = [];
@@ -872,24 +946,22 @@ exports.signupDummies = (req, res) => {
       lastName: lastNames[Math.floor(Math.random() * lastNames.length)],
       classYear: classYears[Math.floor(Math.random() * classYears.length)],
       majors: [majors_[Math.floor(Math.random() * majors_.length)], "", ""],
-      preferredPronouns: "",
-      email: `${firstName_}@brown.edu`,
+      pronouns: "",
+      email: `${firstName_}@brown.edu`.toLowerCase(),
       // Interests
-      interests1: [1, 2, 3].map(
-        (index) => interests1_[Math.floor(Math.random() * interests1_.length)]
-      ),
-      interests2: [1, 2, 3, 4].map(
-        (index) => interests2_[Math.floor(Math.random() * interests2_.length)]
-      ),
-      interests3: [1, 2, 3].map(
-        (index) => interests3_[Math.floor(Math.random() * interests3_.length)]
-      ),
+      interests1: "",
+      interests2: "",
+      interests3: "",
       // Courses
       courses: [
-        { code: "CODE 0001", color: "#16a085", name: "Class 1" },
-        { code: "CODE 0002", color: "#16a085", name: "Class 2" },
-        { code: "CODE 0003", color: "#16a085", name: "Class 3" },
-        { code: "CODE 0004", color: "#16a085", name: "Class 4" },
+        {
+          code: "ECON 0110",
+          color: "#16a085",
+          name: "Principles of Economics",
+        },
+        { code: "", color: "", name: "" },
+        { code: "", color: "", name: "" },
+        { code: "", color: "", name: "" },
         { code: "", color: "", name: "" },
       ],
     };
@@ -902,7 +974,7 @@ exports.signupDummies = (req, res) => {
 
     let emailId = newUser.email.split("@")[0];
 
-    db.doc(`/profiles/${firstName_}`)
+    db.doc(`/profiles/${emailId}`)
       .get()
       .then((doc) => {
         if (doc.exists) {
@@ -916,7 +988,7 @@ exports.signupDummies = (req, res) => {
           lastName: newUser.lastName,
           classYear: newUser.classYear,
           majors: newUser.majors,
-          preferredPronouns: newUser.preferredPronouns,
+          pronouns: newUser.pronouns,
           email: newUser.email,
           createdAt: new Date().toISOString(),
           imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
@@ -961,25 +1033,7 @@ exports.signupDummies = (req, res) => {
           db.doc(`/profiles/${emailId}`).set(userCredentials),
           db
             .collection("courses")
-            .doc(`CODE0001`)
-            .collection("students")
-            .doc(firstName_)
-            .set({ userCardData }),
-          db
-            .collection("courses")
-            .doc(`CODE0002`)
-            .collection("students")
-            .doc(firstName_)
-            .set({ userCardData }),
-          db
-            .collection("courses")
-            .doc(`CODE0003`)
-            .collection("students")
-            .doc(firstName_)
-            .set({ userCardData }),
-          db
-            .collection("courses")
-            .doc(`CODE0004`)
+            .doc(`ECON0110`)
             .collection("students")
             .doc(firstName_)
             .set({ userCardData }),
@@ -990,7 +1044,7 @@ exports.signupDummies = (req, res) => {
         Promise.all([promises]);
       })
       .then(() => {
-        return res.status(201).json({ message: "User successfully created" });
+        return res.status(201).json({ message: "Users successfully created" });
       })
       .catch((err) => {
         console.error(err);
