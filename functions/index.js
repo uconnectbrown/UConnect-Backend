@@ -12,6 +12,7 @@ const {
 
   // Others
   signup, // Welcome
+  newFeatured, // Landing
   getFeatured, // Landing
   requestFeatured, // Landing
   acceptFeatured, // Landing
@@ -47,6 +48,7 @@ app.post("/signup", signup); // Profile Build
 app.post("/edit/:emailId", editUserDetails); // Profile
 app.get("/update/:emailId", updateCourses); // Profile
 
+app.get("/newfeatured/:emailId", newFeatured) // Landing
 app.get("/featured/:emailId", getFeatured); // Landing
 app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Landing
 app.get("/accfeatured/:senderId/:receiverId", acceptFeatured); // Landing
