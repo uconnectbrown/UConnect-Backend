@@ -433,7 +433,7 @@ exports.request = (req, res) => {
       .doc(receiverId)
       .collection("statuses")
       .doc(senderId)
-      .set({ status: "in" }),
+      .set({ status: "inc" }),
 
     db
       .collection("profiles")
