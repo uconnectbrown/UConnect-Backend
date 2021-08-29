@@ -11,6 +11,7 @@ const {
   validateSignupData,
   reduceUserDetails,
   chooseRandom,
+  filterName,
 } = require("../util/validators");
 
 // Dummy user generation
@@ -147,8 +148,7 @@ exports.generateFeatured = (req, res) => {
 // Generate featured profiles for new users
 exports.newFeatured = (req, res) => {
   let emailId = req.params.emailId;
-  db
-    .collection("profiles")
+  db.collection("profiles")
     .get()
     .then((data) => {
       let studentProfiles = [];
@@ -422,19 +422,59 @@ exports.getConnections = (req, res) => {
     });
 };
 
-// Get all students in UConnect
-exports.getAll = (req, res) => {
+// Search by name
+exports.searchName = (req, res) => {
   let email = req.params.email;
+  let query = req.params.query;
+  let myProfile = {};
+  let studentProfiles = [];
   db.collection("profiles")
     .get()
     .then((data) => {
-      let students = [];
       data.forEach((doc) => {
         if (doc.data().email !== email) {
-          students.push(doc.data());
+          studentProfiles.push(doc.data());
+        } else if (doc.data().email === email) {
+          myProfile = doc.data();
         }
       });
-      return res.json(students);
+
+      studentProfiles = studentProfiles.filter((student) =>
+        filterName(student.firstName, student.lastName, query)
+      );
+      let scores = compScore(myProfile, studentProfiles);
+      return res.json(scores);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
+// Search by field
+exports.searchField = (req, res) => {
+  let email = req.params.email;
+  let options = req.body.options;
+  let param = req.body.param;
+  let myProfile = {};
+  let studentProfiles = [];
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        if (doc.data().email !== email) {
+          studentProfiles.push(doc.data());
+        } else if (doc.data().email === email) {
+          myProfile = doc.data();
+        }
+      });
+      studentProfiles = studentProfiles.filter((student) => {
+        if (student[param].length > 1) {
+          return options.filter((v) => student[param].includes(v)).length > 0;
+        } else return options.includes(student[param]);
+      });
+      let scores = compScore(myProfile, studentProfiles);
+      return res.json(scores);
     })
     .catch((err) => {
       console.error(err);
@@ -826,7 +866,7 @@ exports.updateCourses = (req, res) => {
 
 // Delete course from database
 exports.deleteCourse = (req, res) => {
-  let emailId = req.params.email.split("@")[0];
+  let emailId = req.params.emailId;
   let courseCode = req.params.courseCode;
   db.collection("courses")
     .doc(courseCode)

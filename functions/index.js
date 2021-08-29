@@ -12,11 +12,12 @@ const {
 
   // Others
   signup, // Welcome
-  newFeatured, // Landing
-  getFeatured, // Landing
-  requestFeatured, // Landing
-  acceptFeatured, // Landing
-  getAll, // Landing
+  newFeatured, // Home
+  getFeatured, // Home
+  requestFeatured, // Home
+  acceptFeatured, // Home
+  searchName, // Home
+  searchField, // Home
   request, // Student
   accept, // Student
   checkStatus, // Student
@@ -26,10 +27,11 @@ const {
   getMessages, // Messages
   getChat, //Messages
 
-  uploadImage, // profileView
-  editUserDetails, //profileView
-  updateCourses, // profileView
-  deleteCourse, // profileView
+  uploadImage, // Profile
+  editUserDetails, //Profile
+  updateCourses, // Profile
+  deleteCourse, // Profile
+
   getOwnCourses, // coursesView
   getAvatars, // coursesView
   getStudents, // courseView
@@ -47,13 +49,15 @@ app.get("/signupDummies", signupDummies); // signup
 app.post("/signup", signup); // Profile Build
 app.post("/edit/:emailId", editUserDetails); // Profile
 app.get("/update/:emailId", updateCourses); // Profile
+app.post("/image/:email", uploadImage); // Profile
+app.get("/delete/:emailId/:courseCode", deleteCourse); // Profile
+app.get("/newfeatured/:emailId", newFeatured); // Home
+app.get("/featured/:emailId", getFeatured); // Home
+app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Home
+app.get("/accfeatured/:senderId/:receiverId", acceptFeatured); // Home
+app.get("/searchName/:email/:query", searchName); // Home
+app.post("/searchField/:email", searchField); // Home
 
-app.get("/newfeatured/:emailId", newFeatured) // Landing
-app.get("/featured/:emailId", getFeatured); // Landing
-app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Landing
-app.get("/accfeatured/:senderId/:receiverId", acceptFeatured); // Landing
-
-app.get("/all/:email", getAll); // Landing
 app.post("/request/:senderId/:receiverId", request); // Student
 app.post("/accept/:senderId/:receiverId", accept); // Student
 app.get("/status/:emailId/:studentId", checkStatus); // Student
@@ -63,8 +67,6 @@ app.get("/senderInfo/:email", getSenderInfo); // Messages
 app.get("/messages/:emailId", getMessages); // Messages
 app.get("/chat/:roomId", getChat); // Messages
 
-app.post("/image/:email", uploadImage); // profileView
-app.get("/delete/:email/:courseCode", deleteCourse); // profileView
 app.get("/courses/:email", getOwnCourses); // coursesView
 app.get("/avatars/:email/:courseCode", getAvatars); // coursesView
 app.get("/students/:email/:courseCode", getStudents); // courseView

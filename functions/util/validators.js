@@ -146,3 +146,16 @@ exports.reduceUserDetails = (data) => {
   if (validEdit(data.favorites)) userDetails.favorites = data.favorites;
   return userDetails;
 };
+
+exports.filterName = (fn, ln, query) => {
+  fn = fn.toLowerCase().trim();
+  ln = ln.toLowerCase().trim();
+  query = query.toLowerCase().trim();
+  if (fn.split(query)[0] === "") return true;
+  if (ln === query) return true;
+  if (query.split(" ").length === 2) {
+    let query1 = query.split(" ")[0];
+    let query2 = query.split(" ")[1];
+    if (fn.split(query1)[0] === "" && ln.split(query2)[0] === "") return true;
+  }
+};
