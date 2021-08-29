@@ -144,6 +144,40 @@ exports.generateFeatured = (req, res) => {
     });
 };
 
+// Generate featured profiles for new users
+exports.newFeatured = (req, res) => {
+  let emailId = req.params.emailId;
+  db
+    .collection("profiles")
+    .get()
+    .then((data) => {
+      let studentProfiles = [];
+      let myProfile = {};
+      data.forEach((doc) => {
+        if (doc.id !== emailId) {
+          studentProfiles.push(doc.data());
+        } else if (doc.id === emailId) {
+          myProfile = doc.data();
+        }
+      });
+      let students = [];
+      let scores = compScore(myProfile, studentProfiles);
+      students = chooseRandom(scores.slice(0, 3), 3);
+      return students;
+    })
+    .then((students) => {
+      return db.collection("profiles").doc(emailId).update({
+        featured: students,
+      });
+    })
+    .then(() => {
+      return res.json({ message: "Featured profiles added successfully" });
+    })
+    .catch((err) => {
+      res.json({ error: err.code });
+    });
+};
+
 // Other Routes
 
 // Sign user up
