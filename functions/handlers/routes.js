@@ -864,7 +864,74 @@ exports.updateCourses = (req, res) => {
     });
 };
 
-// Delete course from database
+// Update varsity
+exports.updateVarsity = (req, res) => {
+  let emailId = req.params.emailId;
+  let promises = [];
+  let varsitySports = [];
+  db.doc(`/profiles/${emailId}`)
+    .get()
+    .then((doc) => {
+      varsitySports = doc.data().varsitySports;
+      return varsitySports;
+    })
+    .then((sports) => {
+      let sportIds = sports
+        .map((sport) => sport.replace(/\s/g, ""))
+        .filter((sport) => sport.length > 1);
+      for (let i = 0; i < sportIds.length; i++) {
+        const userCardData = {
+          emailId,
+        };
+        promises.push(
+          db
+            .collection("varsitySports")
+            .doc(`${sportIds[i]}`)
+            .collection("profiles")
+            .doc(emailId)
+            .set({ userCardData }),
+
+          db
+            .collection("varsitySports")
+            .doc(`${sportIds[i]}`)
+            .set({ dummy: true })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all([promises]);
+    })
+    .then(() => {
+      return res.json({ messages: "Varsity sports updated successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// Delete user from varsitySport
+exports.deleteVarsity = (req, res) => {
+  let emailId = req.params.emailId;
+  let sportId = req.params.sportId;
+  db.collection("varsitySports")
+    .doc(sportId)
+    .collection("profiles")
+    .doc(emailId)
+    .delete()
+    .then(() => {
+      return res.json({
+        messages: "User successfully removed from varsity sport",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// Delete user from course
 exports.deleteCourse = (req, res) => {
   let emailId = req.params.emailId;
   let courseCode = req.params.courseCode;
@@ -874,7 +941,7 @@ exports.deleteCourse = (req, res) => {
     .doc(emailId)
     .delete()
     .then(() => {
-      return res.json({ messages: "Course successfully deleted" });
+      return res.json({ messages: "User successfully removed from course" });
     })
     .catch((err) => {
       console.error(err);

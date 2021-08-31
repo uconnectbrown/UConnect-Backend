@@ -31,6 +31,8 @@ const {
   editUserDetails, //Profile
   updateCourses, // Profile
   deleteCourse, // Profile
+  updateVarsity, // Profile
+  deleteVarsity, // Profile
 
   getOwnCourses, // coursesView
   getAvatars, // coursesView
@@ -51,6 +53,9 @@ app.post("/edit/:emailId", editUserDetails); // Profile
 app.get("/update/:emailId", updateCourses); // Profile
 app.post("/image/:email", uploadImage); // Profile
 app.get("/delete/:emailId/:courseCode", deleteCourse); // Profile
+app.get("/updateV/:emailId", updateVarsity); // Profile
+app.get("/deleteV/:emailId/:sportId", deleteVarsity); // Profile
+
 app.get("/newfeatured/:emailId", newFeatured); // Home
 app.get("/featured/:emailId", getFeatured); // Home
 app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Home
