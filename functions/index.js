@@ -23,6 +23,10 @@ const {
   checkStatus, // Student
   getPending, // Connections
   getConnections, // Connections
+  searchConnections, // Connections
+  searchCourseField, // Course View
+  searchCourseName, // Course View
+
   getSenderInfo, // Message
   getMessages, // Messages
   getChat, //Messages
@@ -66,11 +70,17 @@ app.post("/searchField/:email", searchField); // Home
 app.post("/request/:senderId/:receiverId", request); // Student
 app.post("/accept/:senderId/:receiverId", accept); // Student
 app.get("/status/:emailId/:studentId", checkStatus); // Student
+
 app.get("/pending/:emailId", getPending); // Connections
 app.get("/connections/:emailId", getConnections); // Connections
+app.get("/searchC/:emailId/:query", searchConnections); // Connections
+
 app.get("/senderInfo/:email", getSenderInfo); // Messages
 app.get("/messages/:emailId", getMessages); // Messages
 app.get("/chat/:roomId", getChat); // Messages
+
+app.post("/searchCField/:code/:email", searchCourseField); // Course View
+app.get("/searchCV/:code/:email/:query", searchCourseName); // Connections
 
 app.get("/courses/:email", getOwnCourses); // coursesView
 app.get("/avatars/:email/:courseCode", getAvatars); // coursesView

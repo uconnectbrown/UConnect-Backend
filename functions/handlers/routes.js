@@ -451,6 +451,61 @@ exports.searchName = (req, res) => {
     });
 };
 
+// Search connections
+exports.searchConnections = (req, res) => {
+  let emailId = req.params.emailId;
+  let query = req.params.query;
+  let studentProfiles = [];
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("connections")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        studentProfiles.push(doc.data());
+      });
+      studentProfiles = studentProfiles.filter((student) =>
+        filterName(
+          student.name.split(" ")[0],
+          student.name.split(" ")[1],
+          query
+        )
+      );
+      return res.json(studentProfiles);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
+// Search connections
+exports.searchCourseName = (req, res) => {
+  let email = req.params.email;
+  let query = req.params.query;
+  let code = req.params.code;
+  let studentProfiles = [];
+  db.collection("courses")
+    .doc(code)
+    .collection("students")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        if (doc.data().userCardData.email !== email) {
+          studentProfiles.push(doc.data().userCardData);
+        }
+      });
+      studentProfiles = studentProfiles.filter((student) =>
+        filterName(student.firstName, student.lastName, query)
+      );
+      return res.json(studentProfiles);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
 // Search by field
 exports.searchField = (req, res) => {
   let email = req.params.email;
@@ -475,6 +530,36 @@ exports.searchField = (req, res) => {
       });
       let scores = compScore(myProfile, studentProfiles);
       return res.json(scores);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
+};
+
+// Search by field in course
+exports.searchCourseField = (req, res) => {
+  let email = req.params.email;
+  let code = req.params.code;
+  let options = req.body.options;
+  let param = req.body.param;
+  let studentProfiles = [];
+  db.collection("courses")
+    .doc(code)
+    .collection("students")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        if (doc.data().userCardData.email !== email) {
+          studentProfiles.push(doc.data().userCardData);
+        }
+      });
+      studentProfiles = studentProfiles.filter((student) => {
+        if (student[param].length > 1) {
+          return options.filter((v) => student[param].includes(v)).length > 0;
+        } else return options.includes(student[param]);
+      });
+      return res.json(studentProfiles);
     })
     .catch((err) => {
       console.error(err);
@@ -796,7 +881,6 @@ exports.updateCourses = (req, res) => {
   let interests2 = [];
   let interests3 = [];
   let instruments = [];
-  let pickUpSports = [];
   let pets = [];
   let courses = [];
   db.doc(`/profiles/${emailId}`)
@@ -838,7 +922,6 @@ exports.updateCourses = (req, res) => {
           interests3,
           instruments,
           pickUpSports,
-          pets,
           courses,
         };
         promises.push(

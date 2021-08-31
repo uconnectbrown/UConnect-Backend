@@ -47,11 +47,11 @@ exports.compScore = (me, students) => {
     compScore += student.greekLife && me.greekLife ? 3 : 0;
     if (
       me.interests1.length + me.interests2.length + me.interests3.length ===
-        10 &&
+        9 &&
       student.interests1.length +
         student.interests2.length +
         student.interests3.length ===
-        10
+        9
     ) {
       compScore +=
         iW *
