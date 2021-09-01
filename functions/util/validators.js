@@ -63,7 +63,18 @@ exports.compScore = (me, students) => {
       me.varsitySports.filter(Boolean).length > 0
         ? 6
         : 0;
+    if (student.varsitySports.filter(Boolean).length > 0 &&
+    me.varsitySports.filter(Boolean).length > 0) {
+      let shareVarsity = true;
+    } else {
+      let shareVarsity = false;
+    }
     compScore += student.greekLife && me.greekLife ? 3 : 0;
+    if (student.greekLife && me.greekLife) {
+      let shareGreek = true;
+    } else {
+      let shareGreek = false;
+    }
     if (
       me.interests1.length + me.interests2.length + me.interests3.length ===
         9 &&
@@ -72,20 +83,21 @@ exports.compScore = (me, students) => {
         student.interests3.length ===
         9
     ) {
+      let interestOverlap = (compare(
+        me.interests1.map((i) => i.interest),
+        student.interests1.map((i) => i.interest)
+      ) +
+        compare(
+          me.interests2.map((i) => i.interest),
+          student.interests2.map((i) => i.interest)
+        ) +
+        compare(
+          me.interests3.map((i) => i.interest),
+          student.interests3.map((i) => i.interest)
+        ))
       compScore +=
         iW *
-        (compare(
-          me.interests1.map((i) => i.interest),
-          student.interests1.map((i) => i.interest)
-        ) +
-          compare(
-            me.interests2.map((i) => i.interest),
-            student.interests2.map((i) => i.interest)
-          ) +
-          compare(
-            me.interests3.map((i) => i.interest),
-            student.interests3.map((i) => i.interest)
-          )) **
+        interestOverlap **
           2;
     }
 
@@ -96,6 +108,19 @@ exports.compScore = (me, students) => {
     compScore += cW * courseOverlap ** 0.5;
     compScore += student.location === me.location ? 10 : 0;
 
+    if (student.pickUpSports.filter(Boolean).length > 0 &&
+    me.pickUpSports.filter(Boolean).length > 0) {
+      let sharePickUp = true;
+    } else {
+      let sharePickUp = false;
+    }
+    if (student.instruments.filter(Boolean).length > 0 &&
+    me.instruments.filter(Boolean).length > 0) {
+      let shareInstruments = true;
+    } else {
+      let shareInstruments = false;
+    }
+
     return {
       score: compScore,
       emailId: student.email.split("@")[0],
@@ -104,6 +129,12 @@ exports.compScore = (me, students) => {
       classYear: student.classYear,
       majors: student.majors,
       status: "nil",
+      interestOverlap: interestOverlap,
+      courseOverlap: courseOverlap,
+      shareVarsity: shareVarsity,
+      shareGreek: shareGreek,
+      sharePickUp: sharePickUp,
+      shareInstruments: shareInstruments,
     };
   });
   return compScores.sort((a, b) =>
