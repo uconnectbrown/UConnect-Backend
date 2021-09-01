@@ -12,6 +12,7 @@ const {
 
   // Others
   signup, // Welcome
+  onboardingDone, //Home
   newFeatured, // Home
   getFeatured, // Home
   requestFeatured, // Home
@@ -50,6 +51,7 @@ const {
 app.get("/generate", generateFeatured);
 app.get("/reset", resetConnections);
 app.get("/signupDummies", signupDummies); // signup
+app.get("/onboard/:emailId", onboardingDone); // Home
 
 // Others
 app.post("/signup", signup); // Profile Build

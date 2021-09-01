@@ -259,6 +259,20 @@ exports.signup = (req, res) => {
     });
 };
 
+// Finish onboarding
+exports.onboardingDone = (req, res) => {
+  let emailId = req.params.emailId;
+  db.collection("profiles")
+    .doc(emailId)
+    .update({ firstTime: false })
+    .then(() => { 
+      return res.json({ message: "Onboarding complete"});
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
 // Get featured profiles
 exports.getFeatured = (req, res) => {
   let emailId = req.params.emailId;
@@ -672,6 +686,11 @@ exports.accept = (req, res) => {
       .collection("statuses")
       .doc(receiverId)
       .set({ status: "con" }),
+
+      db
+      .collection("profiles")
+      .doc(senderId)
+      .update({ requests: admin.firestore.FieldValue.increment(1) }),
   ];
   Promise.all([promises])
     .then(() => {

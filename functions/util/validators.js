@@ -20,9 +20,28 @@ const isEmail = (email) => {
 
 const compare = (a1, a2) => a1.filter((v) => a2.includes(v)).length;
 
-const compareMajors = (a1, a2) =>
-  a1.filter((v) => a2.includes(v.split("-")[0]) || a2.includes(v.split("-")[1]))
-    .length;
+// major comparing in progress
+const compareMajors = (a1, a2) => {
+  let m1 = a1.map((v) => {
+    if (v.split("-").length === 1) {
+      [v]
+    } else {
+      [v.split("-")[0], v.split("-")[1]]
+    }
+  });
+  let m2 = a2.map((v) => {
+    if (v.split("-").length === 1) {
+      [v]
+    } else {
+      [v.split("-")[0], v.split("-")[1]]
+    }
+  });
+  let overlap = 0;
+  for (let i = 0; i < m1.length; i++) {
+    overlap += m1[i].filter((v) => m2.includes(v)).length > 0 ? 1 : 0;
+  }
+  return overlap
+};
 
 exports.compScore = (me, students) => {
   let mW = 8; // major
@@ -34,7 +53,7 @@ exports.compScore = (me, students) => {
     compScore += Math.abs(student.classYear - me.classYear) > 1 ? -10 : 0;
     compScore +=
       mW *
-      compareMajors(
+      compare(
         me.majors.filter(Boolean),
         student.majors.filter(Boolean)
       ) **
