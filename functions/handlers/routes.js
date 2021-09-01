@@ -221,6 +221,7 @@ exports.signup = (req, res) => {
         majors: newUser.majors,
         pronouns: newUser.pronouns,
         email: newUser.email,
+        location: newUser.location,
         createdAt: new Date().toISOString(),
         imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
         // Interests
@@ -242,8 +243,6 @@ exports.signup = (req, res) => {
         greekLife: "",
         instruments: ["", "", ""],
         pickUpSports: ["", "", ""],
-        pets: ["", "", ""],
-        favorites: { book: "", movie: "", show: "", artist: "" },
         // Other
         requests: 3,
         firstTime: true,
@@ -881,7 +880,6 @@ exports.updateCourses = (req, res) => {
   let interests2 = [];
   let interests3 = [];
   let instruments = [];
-  let pets = [];
   let courses = [];
   db.doc(`/profiles/${emailId}`)
     .get()
@@ -899,7 +897,6 @@ exports.updateCourses = (req, res) => {
       interests3 = doc.data().interests3;
       instruments = doc.data().instruments;
       pickUpSports = doc.data().pickUpSports;
-      pets = doc.data().pets;
       courses = doc.data().courses;
       return courses;
     })
@@ -1229,8 +1226,6 @@ exports.signupDummies = (req, res) => {
           greekLife: "",
           instruments: ["", "", ""],
           pickUpSports: ["", "", ""],
-          pets: ["", "", ""],
-          favorites: { book: "", movie: "", show: "", artist: "" },
           // Miscellaneous
           firstTime: true,
         };
@@ -1249,7 +1244,6 @@ exports.signupDummies = (req, res) => {
           interests3: userCredentials.interests3,
           instruments: userCredentials.instruments,
           pickUpSports: userCredentials.pickUpSports,
-          pets: userCredentials.pets,
           courses: userCredentials.courses,
         };
 

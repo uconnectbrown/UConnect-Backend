@@ -142,8 +142,6 @@ exports.reduceUserDetails = (data) => {
   if (validEdit(data.instruments)) userDetails.instruments = data.instruments;
   if (validEdit(data.pickUpSports))
     userDetails.pickUpSports = data.pickUpSports;
-  if (validEdit(data.pets)) userDetails.pets = data.pets;
-  if (validEdit(data.favorites)) userDetails.favorites = data.favorites;
   return userDetails;
 };
 
