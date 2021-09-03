@@ -8,6 +8,7 @@ const {
   // Strictly backend
   generateFeatured,
   signupDummies,
+  refreshRequests,
 
   // Others
   signup, // Welcome
@@ -16,10 +17,12 @@ const {
   getFeatured, // Home
   requestFeatured, // Home
   acceptFeatured, // Home
+  undoFeatured, // Home
   searchName, // Home
   searchField, // Home
   request, // Student
   accept, // Student
+  undoRequest, // Student
   checkStatus, // Student
   getPending, // Connections
   getConnections, // Connections
@@ -36,6 +39,8 @@ const {
   deleteVarsity, // Profile
   updatePickUp, // Profile
   deletePickUp, // Profile
+  updateInstrument, // Profile
+  deleteInstrument, // Profile
 
   getStudents, // courseView
   getUserDetails, // studentView
@@ -46,6 +51,7 @@ const {
 // Strictly backend
 app.get("/generate", generateFeatured);
 app.get("/signupDummies", signupDummies);
+app.get("/refreshReq", refreshRequests);
 
 // Others
 app.post("/signup", signup); // Profile Build
@@ -56,16 +62,21 @@ app.get("/delete/:emailId/:courseCode", deleteCourse); // Profile
 app.get("/updateV/:emailId", updateVarsity); // Profile
 app.get("/deleteV/:emailId/:sportId", deleteVarsity); // Profile
 app.get("/updateP/:emailId", updatePickUp); // Profile
-app.get("/deleteP/:emailId", deletePickUp); // Profile
+app.get("/deleteP/:emailId/:sportId", deletePickUp); // Profile
+app.get("/updateI/:emailId", updateInstrument); // Profile
+app.get("/deleteI/:emailId/:instrumentId", deleteInstrument); // Profile
 app.get("/newfeatured/:emailId", newFeatured); // Home
 app.get("/featured/:emailId", getFeatured); // Home
 app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Home
 app.get("/accfeatured/:senderId/:receiverId", acceptFeatured); // Home
+app.get("/unfeatured/:senderId/:receiverId", undoFeatured); // Home
+
 app.get("/searchName/:email/:query", searchName); // Home
 app.post("/searchField/:email", searchField); // Home
 app.get("/onboard/:emailId", onboardingDone); // Home
 
 app.post("/request/:senderId/:receiverId", request); // Student
+app.get("/undoRequest/:senderId/:receiverId", undoRequest); // Student
 app.post("/accept/:senderId/:receiverId", accept); // Student
 app.get("/status/:emailId/:studentId", checkStatus); // Student
 

@@ -92,6 +92,37 @@ exports.generateFeatured = (req, res) => {
     });
 };
 
+// Refresh requests
+exports.refreshRequests = (req, res) => {
+  let emailIds = [];
+  let promises = [];
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        emailIds.push(doc.id);
+      });
+      return emailIds;
+    })
+    .then((emailIds) => {
+      for (let i = 0; i < emailIds.length; i++) {
+        promises.push(
+          db.collection("profiles").doc(emailIds[i]).update({ requests: 5 })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all(promises);
+    })
+    .then(() => {
+      return res.json({ message: "Requests updated successfully" });
+    })
+    .catch((err) => {
+      res.json({ error: err.code });
+    });
+};
+
 // Generate featured profiles for new users
 exports.newFeatured = (req, res) => {
   let emailId = req.params.emailId;
@@ -344,6 +375,61 @@ exports.acceptFeatured = (req, res) => {
     .catch((err) => console.log(err));
 };
 
+// Undo featured
+exports.undoFeatured = (req, res) => {
+  let senderId = req.params.senderId;
+  let receiverId = req.params.receiverId;
+  let featured1 = [];
+  let featured2 = [];
+  let promises = [
+    db
+      .doc(`/profiles/${senderId}`)
+      .get()
+      .then((doc) => {
+        return (featured1 = doc.data().featured);
+      })
+      .then((featured) => {
+        for (let i = 0; i < featured.length; i++) {
+          if (featured[i].emailId === receiverId) {
+            featured[i].status = "nil";
+          }
+        }
+        return featured;
+      })
+      .then((featured) => {
+        return db
+          .collection("profiles")
+          .doc(senderId)
+          .update({ featured: featured });
+      }),
+    db
+      .doc(`/profiles/${receiverId}`)
+      .get()
+      .then((doc) => {
+        return (featured2 = doc.data().featured);
+      })
+      .then((featured) => {
+        for (let i = 0; i < featured.length; i++) {
+          if (featured[i].emailId === senderId) {
+            featured[i].status = "nil";
+          }
+        }
+        return featured;
+      })
+      .then((featured) => {
+        return db
+          .collection("profiles")
+          .doc(receiverId)
+          .update({ featured: featured });
+      }),
+  ];
+  Promise.all(promises)
+    .then(() => {
+      res.json({ message: "Request undone successfully" });
+    })
+    .catch((err) => console.log(err));
+};
+
 // Get pending requests
 exports.getPending = (req, res) => {
   let emailId = req.params.emailId;
@@ -453,7 +539,11 @@ exports.request = (req, res) => {
       .doc(senderId)
       .collection("sent")
       .doc(receiverId)
-      .set({ sent: new Date().toISOString() }),
+      .set({
+        sent: new Date().toISOString(),
+        emailId: receiverId,
+        imageUrl: req.body.receiverImageUrl,
+      }),
 
     db
       .collection("profiles")
@@ -497,6 +587,55 @@ exports.request = (req, res) => {
       return res.status(500).json({ error: err.code });
     });
 };
+// Undo a request
+exports.undoRequest = (req, res) => {
+  let senderId = req.params.senderId;
+  let receiverId = req.params.receiverId;
+
+  let promises = [
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("sent")
+      .doc(receiverId)
+      .delete(),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("statuses")
+      .doc(receiverId)
+      .delete(),
+
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("statuses")
+      .doc(senderId)
+      .delete(),
+
+    db
+      .collection("profiles")
+      .doc(receiverId)
+      .collection("pending")
+      .doc(senderId)
+      .delete(),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .update({ requests: admin.firestore.FieldValue.increment(1) }),
+  ];
+
+  Promise.all([promises])
+    .then(() => {
+      return res.json({ messages: "Request sent successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
 
 // Accept request
 exports.accept = (req, res) => {
@@ -508,6 +647,13 @@ exports.accept = (req, res) => {
       .doc(receiverId)
       .collection("pending")
       .doc(senderId)
+      .delete(),
+
+    db
+      .collection("profiles")
+      .doc(senderId)
+      .collection("sent")
+      .doc(receiverId)
       .delete(),
 
     db
@@ -866,6 +1012,48 @@ exports.updatePickUp = (req, res) => {
     });
 };
 
+// Update instrument
+exports.updateInstrument = (req, res) => {
+  let emailId = req.params.emailId;
+  let promises = [];
+  let instruments = [];
+  db.doc(`/profiles/${emailId}`)
+    .get()
+    .then((doc) => {
+      instruments = doc.data().instruments;
+      return instruments;
+    })
+    .then((instruments) => {
+      let instrumentIds = instruments
+        .map((instrument) => instrument.replace(/\s/g, ""))
+        .filter((instrument) => instrument.length > 1);
+      for (let i = 0; i < instrumentIds.length; i++) {
+        const userCardData = {
+          emailId,
+        };
+        promises.push(
+          db
+            .collection("ecs")
+            .doc("instruments")
+            .collection(`${instrumentIds[i]}`)
+            .doc(emailId)
+            .set({ userCardData })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all([promises]);
+    })
+    .then(() => {
+      return res.json({ messages: "Instruments updated successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
 // Delete user from varsitySport
 exports.deleteVarsity = (req, res) => {
   let emailId = req.params.emailId;
@@ -898,6 +1086,26 @@ exports.deletePickUp = (req, res) => {
     .then(() => {
       return res.json({
         messages: "User successfully removed from pickup sport",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
+// Delete user from instrument
+exports.deleteInstrument = (req, res) => {
+  let emailId = req.params.emailId;
+  let instrumentId = req.params.instrumentId;
+  db.collection("ecs")
+    .doc("instruments")
+    .collection(instrumentId)
+    .doc(emailId)
+    .delete()
+    .then(() => {
+      return res.json({
+        messages: "User successfully removed from instrument",
       });
     })
     .catch((err) => {
