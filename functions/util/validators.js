@@ -24,23 +24,23 @@ const compare = (a1, a2) => a1.filter((v) => a2.includes(v)).length;
 const compareMajors = (a1, a2) => {
   let m1 = a1.map((v) => {
     if (v.split("-").length === 1) {
-      [v]
+      [v];
     } else {
-      [v.split("-")[0], v.split("-")[1]]
+      [v.split("-")[0], v.split("-")[1]];
     }
   });
   let m2 = a2.map((v) => {
     if (v.split("-").length === 1) {
-      [v]
+      [v];
     } else {
-      [v.split("-")[0], v.split("-")[1]]
+      [v.split("-")[0], v.split("-")[1]];
     }
   });
   let overlap = 0;
   for (let i = 0; i < m1.length; i++) {
     overlap += m1[i].filter((v) => m2.includes(v)).length > 0 ? 1 : 0;
   }
-  return overlap
+  return overlap;
 };
 
 exports.compScore = (me, students) => {
@@ -48,32 +48,33 @@ exports.compScore = (me, students) => {
   let iW = 0.5; // interests
   let cW = 6; // courses
   let compScores = students.map((student) => {
+    let interestOverlap = 0;
+    let courseOverlap = 0;
+    let shareGreek, shareInstruments, sharePickUp, shareVarsity;
     let compScore = 0;
     compScore += student.classYear === me.classYear ? 10 : 0;
     compScore += Math.abs(student.classYear - me.classYear) > 1 ? -10 : 0;
     compScore +=
       mW *
-      compare(
-        me.majors.filter(Boolean),
-        student.majors.filter(Boolean)
-      ) **
-        0.5;
+      compare(me.majors.filter(Boolean), student.majors.filter(Boolean)) ** 0.5;
     compScore +=
       student.varsitySports.filter(Boolean).length > 0 &&
       me.varsitySports.filter(Boolean).length > 0
         ? 6
         : 0;
-    if (student.varsitySports.filter(Boolean).length > 0 &&
-    me.varsitySports.filter(Boolean).length > 0) {
-      let shareVarsity = true;
+    if (
+      student.varsitySports.filter(Boolean).length > 0 &&
+      me.varsitySports.filter(Boolean).length > 0
+    ) {
+      shareVarsity = true;
     } else {
-      let shareVarsity = false;
+      shareVarsity = false;
     }
     compScore += student.greekLife && me.greekLife ? 3 : 0;
     if (student.greekLife && me.greekLife) {
-      let shareGreek = true;
+      shareGreek = true;
     } else {
-      let shareGreek = false;
+      shareGreek = false;
     }
     if (
       me.interests1.length + me.interests2.length + me.interests3.length ===
@@ -83,10 +84,11 @@ exports.compScore = (me, students) => {
         student.interests3.length ===
         9
     ) {
-      let interestOverlap = (compare(
-        me.interests1.map((i) => i.interest),
-        student.interests1.map((i) => i.interest)
-      ) +
+      interestOverlap =
+        compare(
+          me.interests1.map((i) => i.interest),
+          student.interests1.map((i) => i.interest)
+        ) +
         compare(
           me.interests2.map((i) => i.interest),
           student.interests2.map((i) => i.interest)
@@ -94,31 +96,32 @@ exports.compScore = (me, students) => {
         compare(
           me.interests3.map((i) => i.interest),
           student.interests3.map((i) => i.interest)
-        ))
-      compScore +=
-        iW *
-        interestOverlap **
-          2;
+        );
+      compScore += iW * interestOverlap ** 2;
     }
 
-    let courseOverlap = compare(
+    courseOverlap = compare(
       me.courses.map((course) => course.code).filter(Boolean),
       student.courses.map((course) => course.code).filter(Boolean)
     );
     compScore += cW * courseOverlap ** 0.5;
     compScore += student.location === me.location ? 10 : 0;
 
-    if (student.pickUpSports.filter(Boolean).length > 0 &&
-    me.pickUpSports.filter(Boolean).length > 0) {
-      let sharePickUp = true;
+    if (
+      student.pickUpSports.filter(Boolean).length > 0 &&
+      me.pickUpSports.filter(Boolean).length > 0
+    ) {
+      sharePickUp = true;
     } else {
-      let sharePickUp = false;
+      sharePickUp = false;
     }
-    if (student.instruments.filter(Boolean).length > 0 &&
-    me.instruments.filter(Boolean).length > 0) {
-      let shareInstruments = true;
+    if (
+      student.instruments.filter(Boolean).length > 0 &&
+      me.instruments.filter(Boolean).length > 0
+    ) {
+      shareInstruments = true;
     } else {
-      let shareInstruments = false;
+      shareInstruments = false;
     }
 
     return {

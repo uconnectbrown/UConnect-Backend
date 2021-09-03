@@ -7,7 +7,6 @@ app.use(cors());
 const {
   // Strictly backend
   generateFeatured,
-  resetConnections,
   signupDummies,
 
   // Others
@@ -24,9 +23,6 @@ const {
   checkStatus, // Student
   getPending, // Connections
   getConnections, // Connections
-  searchConnections, // Connections
-  searchCourseField, // Course View
-  searchCourseName, // Course View
 
   getSenderInfo, // Message
   getMessages, // Messages
@@ -38,9 +34,9 @@ const {
   deleteCourse, // Profile
   updateVarsity, // Profile
   deleteVarsity, // Profile
+  updatePickUp, // Profile
+  deletePickUp, // Profile
 
-  getOwnCourses, // coursesView
-  getAvatars, // coursesView
   getStudents, // courseView
   getUserDetails, // studentView
 } = require("./handlers/routes");
@@ -49,9 +45,7 @@ const {
 
 // Strictly backend
 app.get("/generate", generateFeatured);
-app.get("/reset", resetConnections);
-app.get("/signupDummies", signupDummies); // signup
-app.get("/onboard/:emailId", onboardingDone); // Home
+app.get("/signupDummies", signupDummies);
 
 // Others
 app.post("/signup", signup); // Profile Build
@@ -61,13 +55,15 @@ app.post("/image/:email", uploadImage); // Profile
 app.get("/delete/:emailId/:courseCode", deleteCourse); // Profile
 app.get("/updateV/:emailId", updateVarsity); // Profile
 app.get("/deleteV/:emailId/:sportId", deleteVarsity); // Profile
-
+app.get("/updateP/:emailId", updatePickUp); // Profile
+app.get("/deleteP/:emailId", deletePickUp); // Profile
 app.get("/newfeatured/:emailId", newFeatured); // Home
 app.get("/featured/:emailId", getFeatured); // Home
 app.get("/reqfeatured/:senderId/:receiverId", requestFeatured); // Home
 app.get("/accfeatured/:senderId/:receiverId", acceptFeatured); // Home
 app.get("/searchName/:email/:query", searchName); // Home
 app.post("/searchField/:email", searchField); // Home
+app.get("/onboard/:emailId", onboardingDone); // Home
 
 app.post("/request/:senderId/:receiverId", request); // Student
 app.post("/accept/:senderId/:receiverId", accept); // Student
@@ -75,20 +71,13 @@ app.get("/status/:emailId/:studentId", checkStatus); // Student
 
 app.get("/pending/:emailId", getPending); // Connections
 app.get("/connections/:emailId", getConnections); // Connections
-app.get("/searchC/:emailId/:query", searchConnections); // Connections
 
 app.get("/senderInfo/:email", getSenderInfo); // Messages
 app.get("/messages/:emailId", getMessages); // Messages
 app.get("/chat/:roomId", getChat); // Messages
 
-app.post("/searchCField/:code/:email", searchCourseField); // Course View
-app.get("/searchCV/:code/:email/:query", searchCourseName); // Connections
-
-app.get("/courses/:email", getOwnCourses); // coursesView
-app.get("/avatars/:email/:courseCode", getAvatars); // coursesView
-app.get("/students/:email/:courseCode", getStudents); // courseView
-app.get("/user/:emailId", getUserDetails); // studentView
-app.get("/messages/:email/:courseCode", getMessages); // messagesView
+app.get("/students/:email/:courseCode", getStudents); // Course View
+app.get("/user/:emailId", getUserDetails); // Profiles + Student
 
 // app.post("/events", createEvent); // events
 // app.get("/events/:eventId", deleteEvent); // events

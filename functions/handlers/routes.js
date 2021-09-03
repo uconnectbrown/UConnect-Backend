@@ -29,59 +29,6 @@ const {
 
 // Strictly Backend
 
-// Delete all pending, statuses, sent, connections
-exports.resetConnections = (req, res) => {
-  let promises = [];
-  let emailIds = [];
-  db.collection("profiles")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        emailIds.push(doc.id);
-      });
-      return emailIds;
-    })
-
-    .then((emailIds) => {
-      for (let i = 0; i < emailIds.length; i++) {
-        promises.push(
-          db
-            .collection("profiles")
-            .doc(emailIds[i])
-            .collection("statuses")
-            .delete()
-        );
-        promises.push(
-          db
-            .collection("profiles")
-            .doc(emailIds[i])
-            .collection("connections")
-            .delete()
-        );
-        promises.push(
-          db.collection("profiles").doc(emailIds[i]).collection("sent").delete()
-        );
-        promises.push(
-          db
-            .collection("profiles")
-            .doc(emailIds[i])
-            .collection("pending")
-            .delete()
-        );
-      }
-      return promises;
-    })
-    .then((promises) => {
-      Promise.all(promises);
-    })
-    .then(() => {
-      return res.json({ message: "Connections reset successfully" });
-    })
-    .catch((err) => {
-      res.json({ error: err.code });
-    });
-};
-
 // Generate featured profiles
 exports.generateFeatured = (req, res) => {
   let emailIds = [];
@@ -264,13 +211,13 @@ exports.onboardingDone = (req, res) => {
   db.collection("profiles")
     .doc(emailId)
     .update({ firstTime: false })
-    .then(() => { 
-      return res.json({ message: "Onboarding complete"});
+    .then(() => {
+      return res.json({ message: "Onboarding complete" });
     })
     .catch((err) => {
       console.log(err);
     });
-}
+};
 
 // Get featured profiles
 exports.getFeatured = (req, res) => {
@@ -464,61 +411,6 @@ exports.searchName = (req, res) => {
     });
 };
 
-// Search connections
-exports.searchConnections = (req, res) => {
-  let emailId = req.params.emailId;
-  let query = req.params.query;
-  let studentProfiles = [];
-  db.collection("profiles")
-    .doc(emailId)
-    .collection("connections")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        studentProfiles.push(doc.data());
-      });
-      studentProfiles = studentProfiles.filter((student) =>
-        filterName(
-          student.name.split(" ")[0],
-          student.name.split(" ")[1],
-          query
-        )
-      );
-      return res.json(studentProfiles);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ error: err.code });
-    });
-};
-
-// Search connections
-exports.searchCourseName = (req, res) => {
-  let email = req.params.email;
-  let query = req.params.query;
-  let code = req.params.code;
-  let studentProfiles = [];
-  db.collection("courses")
-    .doc(code)
-    .collection("students")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        if (doc.data().userCardData.email !== email) {
-          studentProfiles.push(doc.data().userCardData);
-        }
-      });
-      studentProfiles = studentProfiles.filter((student) =>
-        filterName(student.firstName, student.lastName, query)
-      );
-      return res.json(studentProfiles);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ error: err.code });
-    });
-};
-
 // Search by field
 exports.searchField = (req, res) => {
   let email = req.params.email;
@@ -543,36 +435,6 @@ exports.searchField = (req, res) => {
       });
       let scores = compScore(myProfile, studentProfiles);
       return res.json(scores);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ error: err.code });
-    });
-};
-
-// Search by field in course
-exports.searchCourseField = (req, res) => {
-  let email = req.params.email;
-  let code = req.params.code;
-  let options = req.body.options;
-  let param = req.body.param;
-  let studentProfiles = [];
-  db.collection("courses")
-    .doc(code)
-    .collection("students")
-    .get()
-    .then((data) => {
-      data.forEach((doc) => {
-        if (doc.data().userCardData.email !== email) {
-          studentProfiles.push(doc.data().userCardData);
-        }
-      });
-      studentProfiles = studentProfiles.filter((student) => {
-        if (student[param].length > 1) {
-          return options.filter((v) => student[param].includes(v)).length > 0;
-        } else return options.includes(student[param]);
-      });
-      return res.json(studentProfiles);
     })
     .catch((err) => {
       console.error(err);
@@ -686,7 +548,7 @@ exports.accept = (req, res) => {
       .doc(receiverId)
       .set({ status: "con" }),
 
-      db
+    db
       .collection("profiles")
       .doc(senderId)
       .update({ requests: admin.firestore.FieldValue.increment(1) }),
@@ -798,57 +660,14 @@ exports.editUserDetails = (req, res) => {
 //     .catch((err) => res.json({ error: err.code }));
 // };
 
-// Get own user's courses
-exports.getOwnCourses = (req, res) => {
-  let courses = [];
-  let emailId = req.params.email.split("@")[0];
-  db.doc(`/profiles/${emailId}`)
-    .get()
-    .then((doc) => {
-      if (doc.exists) {
-        courses = doc.data().courses;
-        return res.json(courses);
-      } else {
-        return res.status(404).json({ error: "Courses not found" });
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      return res.status(500).json({ error: err.code });
-    });
-};
-
-// Get all avatars in a given course
-exports.getAvatars = (req, res) => {
-  let courseCode = req.params.courseCode;
-  let email = req.params.email;
-  db.collection("courses")
-    .doc(courseCode)
-    .collection("students")
-    .get()
-    .then((data) => {
-      let students = [];
-      data.forEach((doc) => {
-        if (doc.data().userCardData.email !== email) {
-          students.push(doc.data().userCardData.imageUrl);
-        }
-      });
-      return res.json(students);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ error: err.code });
-    });
-};
-
 // Get all students in given course
 exports.getStudents = (req, res) => {
   let courseCode = req.params.courseCode;
   let email = req.params.email;
 
   db.collection("courses")
-    .doc(courseCode)
-    .collection("students")
+    .doc("codes")
+    .collection(courseCode)
     .get()
     .then((data) => {
       let studentProfiles = [];
@@ -943,8 +762,8 @@ exports.updateCourses = (req, res) => {
         promises.push(
           db
             .collection("courses")
-            .doc(`${courseCodes[i]}`)
-            .collection("students")
+            .doc("codes")
+            .collection(`${courseCodes[i]}`)
             .doc(emailId)
             .set({ userCardData })
         );
@@ -984,16 +803,11 @@ exports.updateVarsity = (req, res) => {
         };
         promises.push(
           db
-            .collection("varsitySports")
-            .doc(`${sportIds[i]}`)
-            .collection("profiles")
+            .collection("ecs")
+            .doc("varsitySports")
+            .collection(`${sportIds[i]}`)
             .doc(emailId)
-            .set({ userCardData }),
-
-          db
-            .collection("varsitySports")
-            .doc(`${sportIds[i]}`)
-            .set({ dummy: true })
+            .set({ userCardData })
         );
       }
       return promises;
@@ -1010,13 +824,55 @@ exports.updateVarsity = (req, res) => {
     });
 };
 
+// Update pickup
+exports.updatePickUp = (req, res) => {
+  let emailId = req.params.emailId;
+  let promises = [];
+  let pickUpSports = [];
+  db.doc(`/profiles/${emailId}`)
+    .get()
+    .then((doc) => {
+      pickUpSports = doc.data().pickUpSports;
+      return pickUpSports;
+    })
+    .then((sports) => {
+      let sportIds = sports
+        .map((sport) => sport.replace(/\s/g, ""))
+        .filter((sport) => sport.length > 1);
+      for (let i = 0; i < sportIds.length; i++) {
+        const userCardData = {
+          emailId,
+        };
+        promises.push(
+          db
+            .collection("ecs")
+            .doc("pickUpSports")
+            .collection(`${sportIds[i]}`)
+            .doc(emailId)
+            .set({ userCardData })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all([promises]);
+    })
+    .then(() => {
+      return res.json({ messages: "Pick up sports updated successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
 // Delete user from varsitySport
 exports.deleteVarsity = (req, res) => {
   let emailId = req.params.emailId;
   let sportId = req.params.sportId;
-  db.collection("varsitySports")
-    .doc(sportId)
-    .collection("profiles")
+  db.collection("ecs")
+    .doc("varsitySports")
+    .collection(sportId)
     .doc(emailId)
     .delete()
     .then(() => {
@@ -1030,13 +886,33 @@ exports.deleteVarsity = (req, res) => {
     });
 };
 
+// Delete user from pickUpSport
+exports.deletePickUp = (req, res) => {
+  let emailId = req.params.emailId;
+  let sportId = req.params.sportId;
+  db.collection("ecs")
+    .doc("pickUpSports")
+    .collection(sportId)
+    .doc(emailId)
+    .delete()
+    .then(() => {
+      return res.json({
+        messages: "User successfully removed from pickup sport",
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
 // Delete user from course
 exports.deleteCourse = (req, res) => {
   let emailId = req.params.emailId;
   let courseCode = req.params.courseCode;
   db.collection("courses")
-    .doc(courseCode)
-    .collection("students")
+    .doc("codes")
+    .collection(courseCode)
     .doc(emailId)
     .delete()
     .then(() => {
@@ -1270,8 +1146,8 @@ exports.signupDummies = (req, res) => {
           db.doc(`/profiles/${emailId}`).set(userCredentials),
           db
             .collection("courses")
-            .doc(`ECON0110`)
-            .collection("students")
+            .doc("codes")
+            .collection("ECON0110")
             .doc(firstName_)
             .set({ userCardData }),
         ];
