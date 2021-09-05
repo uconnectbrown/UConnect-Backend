@@ -629,7 +629,7 @@ exports.undoRequest = (req, res) => {
 
   Promise.all([promises])
     .then(() => {
-      return res.json({ messages: "Request sent successfully" });
+      return res.json({ messages: "Request undone successfully" });
     })
     .catch((err) => {
       console.error(err);

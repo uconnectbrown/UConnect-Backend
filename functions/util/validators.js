@@ -20,20 +20,22 @@ const isEmail = (email) => {
 
 const compare = (a1, a2) => a1.filter((v) => a2.includes(v)).length;
 
-// major comparing in progress
 const compareMajors = (a1, a2) => {
-  let m1 = a1.map((v) => {
+  let m1 = [];
+  a1.map((v) => {
     if (v.split("-").length === 1) {
-      [v];
+      m1.push([v]);
     } else {
-      [v.split("-")[0], v.split("-")[1]];
+      m1.push([v.split("-")[0], v.split("-")[1]]);
     }
   });
-  let m2 = a2.map((v) => {
+  let m2 = [];
+  a2.map((v) => {
     if (v.split("-").length === 1) {
-      [v];
+      m2.push(v);
     } else {
-      [v.split("-")[0], v.split("-")[1]];
+      m2.push(v.split("-")[0]);
+      m2.push(v.split("-")[1]);
     }
   });
   let overlap = 0;
@@ -56,7 +58,22 @@ exports.compScore = (me, students) => {
     compScore += Math.abs(student.classYear - me.classYear) > 1 ? -10 : 0;
     compScore +=
       mW *
-      compare(me.majors.filter(Boolean), student.majors.filter(Boolean)) ** 0.5;
+      compareMajors(
+        me.majors.filter(Boolean),
+        student.majors.filter(Boolean)
+      ) **
+        0.5;
+    compScore +=
+      me.location.country !== "United States of America" &&
+      me.location.country === student.location.country
+        ? 8
+        : 0;
+    compScore +=
+      me.location.state === "United States of America" &&
+      student.location.country === "United States of America" &&
+      me.location.state === student.location.state
+        ? 8
+        : 0;
     compScore +=
       student.varsitySports.filter(Boolean).length > 0 &&
       me.varsitySports.filter(Boolean).length > 0
