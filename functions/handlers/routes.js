@@ -222,7 +222,7 @@ exports.signup = (req, res) => {
         instruments: ["", "", ""],
         pickUpSports: ["", "", ""],
         // Other
-        requests: 3,
+        requests: 10,
         firstTime: true,
       };
 
@@ -1197,7 +1197,7 @@ exports.getMessages = (req, res) => {
   db.collection("profiles")
     .doc(emailId)
     .collection("messages")
-    .orderBy("mostRecent", "desc")
+    .orderBy("lastSent", "desc")
     .get()
     .then((data) => {
       let messages = [];

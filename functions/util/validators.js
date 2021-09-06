@@ -46,16 +46,16 @@ const compareMajors = (a1, a2) => {
 };
 
 exports.compScore = (me, students) => {
-  let mW = 8; // major
-  let iW = 0.5; // interests
-  let cW = 6; // courses
+  let mW = 6; // major
+  let iW = 2 / 3; // interests
+  let cW = 4; // courses
   let compScores = students.map((student) => {
     let interestOverlap = 0;
     let courseOverlap = 0;
     let shareGreek, shareInstruments, sharePickUp, shareVarsity;
     let compScore = 0;
-    compScore += student.classYear === me.classYear ? 10 : 0;
-    compScore += Math.abs(student.classYear - me.classYear) > 1 ? -10 : 0;
+    compScore += student.classYear === me.classYear ? 4 : 0;
+    compScore += Math.abs(student.classYear - me.classYear) > 1 ? -2 : 0;
     compScore +=
       mW *
       compareMajors(
@@ -65,13 +65,15 @@ exports.compScore = (me, students) => {
         0.5;
     compScore +=
       me.location.country !== "United States of America" &&
-      me.location.country === student.location.country
+      me.location.country === student.location.country &&
+      me.location.country
         ? 8
         : 0;
     compScore +=
-      me.location.state === "United States of America" &&
+      me.location.country === "United States of America" &&
       student.location.country === "United States of America" &&
-      me.location.state === student.location.state
+      me.location.state === student.location.state &&
+      me.location.state
         ? 8
         : 0;
     compScore +=
@@ -87,48 +89,34 @@ exports.compScore = (me, students) => {
     } else {
       shareVarsity = false;
     }
-    compScore += student.greekLife && me.greekLife ? 3 : 0;
-    if (student.greekLife && me.greekLife) {
-      shareGreek = true;
-    } else {
-      shareGreek = false;
-    }
-    if (
-      me.interests1.length + me.interests2.length + me.interests3.length ===
-        9 &&
-      student.interests1.length +
-        student.interests2.length +
-        student.interests3.length ===
-        9
-    ) {
-      interestOverlap =
-        compare(
-          me.interests1.map((i) => i.interest),
-          student.interests1.map((i) => i.interest)
-        ) +
-        compare(
-          me.interests2.map((i) => i.interest),
-          student.interests2.map((i) => i.interest)
-        ) +
-        compare(
-          me.interests3.map((i) => i.interest),
-          student.interests3.map((i) => i.interest)
-        );
-      compScore += iW * interestOverlap ** 2;
-    }
+
+    interestOverlap =
+      compare(
+        me.interests1.map((i) => i.interest),
+        student.interests1.map((i) => i.interest)
+      ) +
+      compare(
+        me.interests2.map((i) => i.interest),
+        student.interests2.map((i) => i.interest)
+      ) +
+      compare(
+        me.interests3.map((i) => i.interest),
+        student.interests3.map((i) => i.interest)
+      );
+    compScore += iW * interestOverlap ** 2;
 
     courseOverlap = compare(
       me.courses.map((course) => course.code).filter(Boolean),
       student.courses.map((course) => course.code).filter(Boolean)
     );
     compScore += cW * courseOverlap ** 0.5;
-    compScore += student.location === me.location ? 10 : 0;
 
     if (
       student.pickUpSports.filter(Boolean).length > 0 &&
       me.pickUpSports.filter(Boolean).length > 0
     ) {
       sharePickUp = true;
+      compScore += 4;
     } else {
       sharePickUp = false;
     }
@@ -137,12 +125,17 @@ exports.compScore = (me, students) => {
       me.instruments.filter(Boolean).length > 0
     ) {
       shareInstruments = true;
+      compScore += 4;
     } else {
       shareInstruments = false;
     }
 
+    compatability =
+      compScore > 1.25 ? Math.round(100 * (1 - 1.25 / compScore)) : 25;
+
     return {
       score: compScore,
+      compatability,
       emailId: student.email.split("@")[0],
       imageUrl: student.imageUrl,
       name: student.firstName + " " + student.lastName,
@@ -152,7 +145,6 @@ exports.compScore = (me, students) => {
       interestOverlap: interestOverlap,
       courseOverlap: courseOverlap,
       shareVarsity: shareVarsity,
-      shareGreek: shareGreek,
       sharePickUp: sharePickUp,
       shareInstruments: shareInstruments,
     };
