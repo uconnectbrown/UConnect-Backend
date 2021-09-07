@@ -140,7 +140,7 @@ exports.newFeatured = (req, res) => {
       });
       let students = [];
       let scores = compScore(myProfile, studentProfiles);
-      students = chooseRandom(scores.slice(0, 5), 5);
+      students = chooseRandom(scores.slice(0, 4), 4);
       return students;
     })
     .then((students) => {
