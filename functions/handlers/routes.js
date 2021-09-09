@@ -1149,9 +1149,15 @@ exports.uploadImage = (req, res) => {
   let generatedToken = uuid();
 
   busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
-    if (mimetype !== "image/jpeg" && mimetype !== "image/png") {
-      return res.status(400).json({ error: "Wrong file type submitted" });
-    }
+    // if (
+    //   mimetype !== "image/jpeg" &&
+    //   mimetype !== "image/jpg" &&
+    //   mimetype !== "image/png" &&
+    //   mimetype !== "image/heic" &&
+    //   mimetype !== "image/heif"
+    // ) {
+    //   return res.status(400).json({ error: "Wrong file type submitted" });
+    // }
     const imageExtension = filename.split(".")[filename.split(".").length - 1];
     imageFileName = `${Math.round(
       Math.random() * 1000000000000
