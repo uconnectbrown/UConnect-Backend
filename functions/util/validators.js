@@ -49,6 +49,7 @@ exports.compScore = (me, students) => {
   let mW = 6; // major
   let iW = 2 / 3; // interests
   let cW = 4; // courses
+  let noise = [-5, -4, -3, -2, -1, 0, 1, 2];
   let compScores = students.map((student) => {
     let interestOverlap = 0;
     let courseOverlap = 0;
@@ -132,6 +133,10 @@ exports.compScore = (me, students) => {
 
     compatability =
       compScore > 1.25 ? Math.round(100 * (1 - 1.25 / compScore)) : 25;
+
+    compatability += noise[Math.floor(Math.random() * noise.length)];
+
+    compatability = Math.min(compatability, 100);
 
     return {
       score: compScore,

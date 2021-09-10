@@ -29,6 +29,92 @@ const {
 
 // Strictly Backend
 
+// Draft featured profiles
+exports.draftFeatured = (req, res) => {
+  let emailIds = [];
+  let promises = [];
+  let draft = [[{ a: "b" }, { b: "c" }]];
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        emailIds.push(doc.id);
+      });
+      return emailIds;
+    })
+    .then((emailIds) => {
+      for (let i = 0; i < emailIds.length; i++) {
+        let notValid = [];
+        db.collection("profiles")
+          .doc(emailIds[i])
+          .collection("statuses")
+          .get()
+          .then((data) => {
+            data.forEach((doc) => {
+              notValid.push(doc.id);
+            });
+          });
+        promises.push(
+          db
+            .collection("profiles")
+            .get()
+            .then((data) => {
+              let studentProfiles = [];
+              let myProfile = {};
+              data.forEach((doc) => {
+                if (doc.id !== emailIds[i] && !notValid.includes(doc.id)) {
+                  studentProfiles.push(doc.data());
+                } else if (doc.id === emailIds[i]) {
+                  myProfile = doc.data();
+                }
+              });
+              let students = [];
+              let scores = compScore(myProfile, studentProfiles);
+              students = chooseRandom(scores.slice(0, 3), 3);
+              console.log(students);
+
+              students.push({ id: emailIds[i] });
+              return draft.push(students);
+            })
+          // .then((students) => {
+          //   return db.collection("profiles").doc(emailIds[i]).update({
+          //     featured: students,
+          //   });
+          // })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all(promises);
+    })
+    .then(() => {
+      return res.json({ results: draft });
+    })
+    // .then(() => {
+    //   return res.json({ message: "Featured profiles updated successfully" });
+    // })
+    .catch((err) => {
+      res.json({ error: err.code });
+    });
+};
+
+// Get all emails
+exports.getEmails = (req, res) => {
+  let emails = [];
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        emails.push(doc.data().email);
+      });
+      return res.json(emails);
+    })
+    .catch((err) => {
+      res.json({ error: err.code });
+    });
+};
+
 // Generate featured profiles
 exports.generateFeatured = (req, res) => {
   let emailIds = [];
@@ -69,7 +155,7 @@ exports.generateFeatured = (req, res) => {
               });
               let students = [];
               let scores = compScore(myProfile, studentProfiles);
-              students = chooseRandom(scores.slice(0, 3), 3);
+              students = chooseRandom(scores.slice(0, 4), 4);
               return students;
             })
             .then((students) => {
