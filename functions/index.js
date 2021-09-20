@@ -11,6 +11,7 @@ const {
   signupDummies,
   refreshRequests,
   getEmails,
+  getNotifications,
 
   // Others
   signup, // Welcome
@@ -57,6 +58,7 @@ app.get("/getEmails", getEmails);
 
 app.get("/signupDummies", signupDummies);
 app.get("/refreshReq", refreshRequests);
+app.get("/getNotis", getNotifications);
 
 // Others
 app.post("/signup", signup); // Profile Build

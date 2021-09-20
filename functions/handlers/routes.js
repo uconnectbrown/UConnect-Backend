@@ -99,6 +99,53 @@ exports.draftFeatured = (req, res) => {
     });
 };
 
+// Draft featured profiles
+exports.getNotifications = (req, res) => {
+  let emailIds = [];
+  let promises = [];
+  let notis = [];
+  return (
+    db
+      .collection("profiles")
+      .get()
+      .then((data) => {
+        data.forEach((doc) => {
+          emailIds.push(doc.id);
+        });
+        return emailIds;
+      })
+      .then((emailIds) => {
+        for (let i = 0; i < emailIds.length; i++) {
+          promises.push(
+            db
+              .collection("profiles")
+              .doc(emailIds[i])
+              .collection("pending")
+              .get()
+              .then((data) => {
+                if (data.size > 0) {
+                  return emailIds[i];
+                }
+              })
+          );
+        }
+        return promises;
+      })
+      .then((promises) => {
+        return Promise.all(promises);
+      })
+      .then((data) => {
+        return res.json(data.filter(Boolean));
+      })
+      // .then(() => {
+      //   return res.json({ message: "Featured profiles updated successfully" });
+      // })
+      .catch((err) => {
+        res.json({ error: err.code });
+      })
+  );
+};
+
 // Get all emails
 exports.getEmails = (req, res) => {
   let emails = [];
@@ -108,6 +155,7 @@ exports.getEmails = (req, res) => {
       data.forEach((doc) => {
         emails.push(doc.data().email);
       });
+      console.log(emails.length);
       return res.json(emails);
     })
     .catch((err) => {
@@ -155,7 +203,7 @@ exports.generateFeatured = (req, res) => {
               });
               let students = [];
               let scores = compScore(myProfile, studentProfiles);
-              students = chooseRandom(scores.slice(0, 4), 4);
+              students = chooseRandom(scores.slice(0, 10), 4);
               return students;
             })
             .then((students) => {
