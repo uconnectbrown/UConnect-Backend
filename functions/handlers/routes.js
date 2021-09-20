@@ -124,7 +124,7 @@ exports.getNotifications = (req, res) => {
               .get()
               .then((data) => {
                 if (data.size > 0) {
-                  return emailIds[i];
+                  return emailIds[i] + "@brown.edu";
                 }
               })
           );
