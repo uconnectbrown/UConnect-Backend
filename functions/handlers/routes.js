@@ -266,7 +266,11 @@ exports.newFeatured = (req, res) => {
       let studentProfiles = [];
       let myProfile = {};
       data.forEach((doc) => {
-        if (doc.id !== emailId) {
+        if (
+          doc.id !== emailId &&
+          doc.data().imageUrl !==
+            "https://firebasestorage.googleapis.com/v0/b/uconnect-5eebd.appspot.com/o/no-img.png?alt=media"
+        ) {
           studentProfiles.push(doc.data());
         } else if (doc.id === emailId) {
           myProfile = doc.data();
