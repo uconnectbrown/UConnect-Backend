@@ -1068,6 +1068,48 @@ exports.updateCourses = (req, res) => {
     });
 };
 
+exports.updateConnections = (req, res) => {
+  let emailId = req.params.emailId;
+  let promises = [];
+  let connections = [];
+  let imageUrl = req.body.imageUrl;
+  let classYear = req.body.classYear;
+  let name = req.body.name;
+  db.collection("profiles")
+    .doc(emailId)
+    .collection("connections")
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        connections.push(doc.id);
+      });
+      return connections;
+    })
+    .then((c) => {
+      for (let i = 0; i < c.length; i++) {
+        promises.push(
+          db
+            .collection("profiles")
+            .doc(c[i])
+            .collection("connections")
+            .doc(emailId)
+            .update({ imageUrl, name, classYear })
+        );
+      }
+      return promises;
+    })
+    .then((promises) => {
+      Promise.all([promises]);
+    })
+    .then(() => {
+      return res.json({ messages: "Connections updated successfully" });
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({ error: err.code });
+    });
+};
+
 // Update varsity
 exports.updateVarsity = (req, res) => {
   let emailId = req.params.emailId;

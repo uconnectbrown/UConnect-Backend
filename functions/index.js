@@ -37,6 +37,7 @@ const {
   uploadImage, // Profile
   editUserDetails, //Profile
   updateCourses, // Profile
+  updateConnections, // Profile
   deleteCourse, // Profile
   updateVarsity, // Profile
   deleteVarsity, // Profile
@@ -64,6 +65,7 @@ app.get("/getNotis", getNotifications);
 app.post("/signup", signup); // Profile Build
 app.post("/edit/:emailId", editUserDetails); // Profile
 app.get("/update/:emailId", updateCourses); // Profile
+app.post("/updateC/:emailId", updateConnections); // Profile
 app.post("/image/:email", uploadImage); // Profile
 app.get("/delete/:emailId/:courseCode", deleteCourse); // Profile
 app.get("/updateV/:emailId", updateVarsity); // Profile
