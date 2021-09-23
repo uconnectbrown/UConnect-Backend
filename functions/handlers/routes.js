@@ -681,6 +681,8 @@ exports.request = (req, res) => {
         sent: new Date().toISOString(),
         emailId: receiverId,
         imageUrl: req.body.receiverImageUrl,
+        name: req.body.receiverName,
+        classYear: req.body.receiverClassYear,
       }),
 
     db

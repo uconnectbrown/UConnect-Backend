@@ -75,7 +75,7 @@ exports.compScore = (me, students) => {
       student.location.country === "United States of America" &&
       me.location.state === student.location.state &&
       me.location.state
-        ? 8
+        ? 6
         : 0;
     compScore +=
       student.varsitySports.filter(Boolean).length > 0 &&
@@ -136,7 +136,7 @@ exports.compScore = (me, students) => {
 
     compatability += noise[Math.floor(Math.random() * noise.length)];
 
-    compatability = Math.min(compatability, 100);
+    compatability = Math.min(compatability, 99);
 
     return {
       score: compScore,
