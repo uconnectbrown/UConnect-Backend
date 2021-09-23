@@ -203,7 +203,7 @@ exports.generateFeatured = (req, res) => {
               });
               let students = [];
               let scores = compScore(myProfile, studentProfiles);
-              students = chooseRandom(scores.slice(0, 10), 4);
+              students = chooseRandom(scores.slice(0, 16), 4);
               return students;
             })
             .then((students) => {
@@ -223,6 +223,26 @@ exports.generateFeatured = (req, res) => {
     })
     .catch((err) => {
       res.json({ error: err.code });
+    });
+};
+
+// Test Comp Scores
+exports.testCompScores = (req, res) => {
+  db.collection("profiles")
+    .get()
+    .then((data) => {
+      let studentProfiles = [];
+      let myProfile = {};
+      data.forEach((doc) => {
+        if (doc.id !== "ethan_huang1") {
+          studentProfiles.push(doc.data());
+        } else if (doc.id === "ethan_huang1") {
+          myProfile = doc.data();
+        }
+      });
+      let scores = compScore(myProfile, studentProfiles);
+      scores = scores.map((score) => score.compatability).sort();
+      return res.json(scores);
     });
 };
 

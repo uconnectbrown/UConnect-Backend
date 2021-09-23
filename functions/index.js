@@ -7,6 +7,7 @@ app.use(cors());
 const {
   // Strictly backend
   generateFeatured,
+  testCompScores,
   draftFeatured,
   signupDummies,
   refreshRequests,
@@ -54,6 +55,8 @@ const {
 
 // Strictly backend
 app.get("/generate", generateFeatured);
+app.get("/testScores", testCompScores);
+
 app.get("/draft", draftFeatured);
 app.get("/getEmails", getEmails);
 
