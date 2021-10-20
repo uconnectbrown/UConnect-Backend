@@ -155,7 +155,6 @@ exports.getEmails = (req, res) => {
       data.forEach((doc) => {
         emails.push(doc.data().email);
       });
-      console.log(emails.length);
       return res.json(emails);
     })
     .catch((err) => {
